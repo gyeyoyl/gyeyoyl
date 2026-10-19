@@ -1,0 +1,44 @@
+[
+  {
+    "id": "01",
+    "category": "column",
+    "title": "MMCA 서울, 서도호, 2026",
+    "date": "2026-9-14",
+    "file": "posts/서도호.md"
+  },
+{
+    "id": "02",
+    "category": "column",
+    "title": "MMCA 서울, 올해의 작가상, 2026",
+    "date": "2026-8-26",
+    "file": "posts/올해의작가상.md"
+  },
+  {
+    "id": "03",
+    "category": "column",
+    "title": "송은, 송은x언박싱프로젝트:생성적 형상들, 2026",
+    "date": "2026-10-12",
+    "file": "posts/언박싱.md"
+  },
+   {
+    "id": "04",
+    "category": "text",
+    "title": "2026. 10. 11",
+    "date": "2026-10-11",
+    "file": "posts/20261011.md"
+  },
+   {
+    "id": "05",
+    "category": "text",
+    "title": "2025. 09. 17",
+    "date": "2025-09-17",
+    "file": "posts/20250917.md"
+  },
+    {
+      "id": "06",
+      "category": "text",
+      "title": "2026. 04. 18",
+      "date": "2026-04-18",
+      "file": "posts/20260418.md"
+    }
+]

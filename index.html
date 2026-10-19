@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14040A">
+
+  <title>EDIT,OR CURATE.</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="wordmark" href="./" aria-label="Home">gyeyoyl<span>®</span></a>
+
+    <div class="top-meta">
+      <span>Yeom Chaewon</span>
+      <span id="live-clock">SEOUL · 00:00:00</span>
+    </div>
+
+    <button id="back-button" class="back-button" type="button" hidden>
+      BACK <span></span>
+    </button>
+  </header>
+
+  <main id="app">
+
+    <!-- HOME -->
+    <section id="home-view" class="home-view">
+
+      <div class="hero-top"></div>
+
+      <div class="hero-title-wrap">
+        <h1 class="hero-title">
+          EDIT,<em>OR</em><br>
+          CURATE<span class="pink-dot">.</span>
+        </h1>
+      </div>
+
+      <div class="intro-row">
+        <p class="intro-copy">
+          눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스 시간은 시간이고 일기는 일기이며 정박된 시간,
+          <br>
+          그것을 발산, 발산하기 창문이 희어지는 순간을 목도하기 당신이 당신 사랑을 숨기는 이유를 이해하고 싶다 focus journal poem error and
+        </p>
+      </div>
+
+      <nav class="category-board" aria-label="Portfolio categories">
+
+        <button class="category-tile tile-text" data-category="text" type="button">
+          <span class="tile-index">01</span>
+          <span class="tile-name">text</span>
+          <span class="tile-foot"></span>
+        </button>
+
+        <button class="category-tile tile-magazines" data-category="magazines" type="button">
+          <span class="tile-index">02</span>
+          <span class="tile-name">magazines</span>
+          <span class="tile-foot"></span>
+        </button>
+
+        <button class="category-tile tile-column" data-category="column" type="button">
+          <span class="tile-index">03</span>
+          <span class="tile-name">column</span>
+          <span class="tile-foot"></span>
+        </button>
+
+        <button class="category-tile tile-shoot" data-category="shoot" type="button">
+          <span class="tile-index">04</span>
+          <span class="tile-name">shoot</span>
+          <span class="tile-foot"></span>
+        </button>
+
+      </nav>
+
+      <footer class="site-footer">
+        <span>@721mhz</span>
+        <span>2002.10.13</span>
+        <span>SEOUL / KR</span>
+      </footer>
+
+    </section>
+    <!-- HOME END -->
+
+
+    <!-- CATEGORY LIST -->
+    <section id="listing-view" class="listing-view" hidden>
+
+      <div class="listing-head">
+        <p class="eyebrow">
+          ARCHIVE / <span id="listing-number">01</span>
+        </p>
+
+        <h1 id="listing-title">text<span>.</span></h1>
+
+        <p id="listing-description" class="listing-description">
+          A collection of traces.
+        </p>
+      </div>
+
+      <div class="listing-controls">
+        <span id="listing-count">00 ITEMS</span>
+
+        <button id="shuffle-button" type="button">
+          SHUFFLE ORDER
+        </button>
+      </div>
+
+      <div id="post-list" class="post-list"></div>
+
+    </section>
+    <!-- CATEGORY LIST END -->
+
+
+    <!-- POST -->
+    <article id="post-view" class="post-view" hidden>
+
+      <div class="post-kicker">
+        <span id="post-category">CATEGORY</span>
+        <span id="post-date">DATE</span>
+        <span id="post-id">MOVE 00</span>
+      </div>
+
+      <div id="post-content" class="post-content"></div>
+
+<nav class="post-navigation" aria-label="글 이동">
+  <button id="previous-post" class="post-nav-link" type="button">
+    <span class="post-nav-label">PREVIOUS</span>
+    <span id="previous-post-title">이전 글</span>
+  </button>
+
+  <button id="next-post" class="post-nav-link" type="button">
+    <span class="post-nav-label">NEXT</span>
+    <span id="next-post-title">다음 글</span>
+  </button>
+</nav>
+
+    </article>
+    <!-- POST END -->
+
+
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+  </main>
+</body>
+
+</html>

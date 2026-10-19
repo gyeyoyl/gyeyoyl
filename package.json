@@ -1,0 +1,8 @@
+{
+  "name": "trace-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:posts": "node scripts/generate-posts.js"
+  }
+}
