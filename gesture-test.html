@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GESTURE TEST · 착수 동작 A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --pink:#EB4587; --ink:#14040A; --paper:#f5f5f5; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:"Helvetica Neue",Arial,"Gothic A1",sans-serif; }
+    .bar { display:flex; justify-content:space-between; align-items:center; padding:0 28px; height:64px; border-bottom:1px solid var(--ink); font-size:10px; letter-spacing:.12em; }
+    .wrap { max-width:1100px; margin:0 auto; padding:35px 28px 80px; }
+    .kicker { display:flex; justify-content:space-between; border-bottom:1px solid var(--ink); padding-bottom:12px; font-size:9px; letter-spacing:.12em; }
+    .layout { display:grid; grid-template-columns:minmax(0,440px) minmax(0,360px); gap:56px; margin-top:28px; align-items:start; }
+    svg { display:block; width:100%; height:auto; background:#f1ece2; }
+    .side { display:flex; flex-direction:column; gap:16px; font-family:"Gothic A1",sans-serif; font-size:12px; }
+    .cam { position:relative; width:100%; aspect-ratio:4/3; background:#ddd; overflow:hidden; }
+    .cam video, .cam canvas { position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1); object-fit:cover; transition:opacity .3s; }
+    .cam .cam-off { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:11px; letter-spacing:.1em; color:var(--ink); display:none; }
+    .cam.is-off video { opacity:.3; }
+    .cam.is-off .cam-off { display:block; }
+    .note.is-black { background:var(--ink); color:var(--pink); }
+    .status { font-size:13px; min-height:20px; }
+    .status.grip { color:var(--pink); }
+    button { font:inherit; font-size:11px; letter-spacing:.08em; padding:8px 12px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer; }
+    button:hover { background:var(--ink); color:var(--paper); }
+    textarea { width:100%; padding:8px; border:1px solid var(--ink); border-radius:0; font-family:inherit; font-size:13px; background:#fff; }
+    .note { padding:14px 16px; background:var(--pink); transform:rotate(-1.5deg); font-size:13px; line-height:1.8; min-height:70px; }
+    .guide { font-size:11px; line-height:1.9; color:#444; margin:0; word-break:keep-all; }
+    .row { display:flex; align-items:center; gap:10px; font-size:11px; }
+    .row input[type=range] { flex:1; }
+    .debug { font-family:monospace; font-size:10px; color:#777; white-space:pre-line; }
+    @keyframes twinkle { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.9); } }
+    .is-new { animation:twinkle 1.4s ease-in-out infinite; }
+    @media (max-width:760px) { .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .wrap { padding:22px 15px 60px; } }
+
+    /* ===== 포토부스 팝업 ===== */
+    .booth-open-btn { align-self:flex-start; }
+    .booth { position:fixed; inset:0; z-index:50; background:rgba(20,4,10,.72); display:flex; align-items:center; justify-content:center; padding:24px; }
+    .booth[hidden] { display:none; }
+    .booth-panel { background:var(--paper); width:min(980px,100%); max-height:100%; overflow:auto; padding:20px 24px 24px; }
+    .booth-head { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--ink); padding-bottom:10px; font-size:10px; letter-spacing:.12em; }
+    .booth-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,300px); gap:28px; margin-top:20px; align-items:start; }
+    .booth-stage { display:flex; justify-content:center; }
+    .booth-live { position:relative; height:min(64vh,620px); aspect-ratio:9/16; background:#17110d; overflow:hidden; }
+    .booth-live video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); filter:grayscale(1) sepia(.35) contrast(1.2) brightness(.92); }
+    .booth-count { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:96px; color:#f5f5f5; font-family:"Helvetica Neue",Arial,sans-serif; pointer-events:none; }
+    .booth-shot { position:absolute; left:12px; top:10px; font-size:11px; letter-spacing:.1em; color:#f5f5f5; }
+    .booth-flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .35s; }
+    .booth-flash.on { opacity:1; transition:none; }
+    .booth-result { position:relative; height:min(64vh,620px); aspect-ratio:846/1476; }
+    .booth-result canvas { position:absolute; inset:0; width:100%; height:100%; }
+    .booth-result[hidden], .booth-live[hidden] { display:none; }
+    #booth-cursor { cursor:crosshair; touch-action:none; }
+    .booth-side { display:flex; flex-direction:column; gap:14px; font-family:"Gothic A1",sans-serif; font-size:12px; }
+    .booth-status { font-size:13px; line-height:1.7; min-height:44px; }
+    .booth-tools { display:flex; flex-direction:column; gap:12px; }
+    .booth-tools[hidden] { display:none; }
+    .pens { display:flex; gap:12px; align-items:center; }
+    .pen { width:26px; height:26px; border-radius:50%; cursor:pointer; display:block; }
+    .pen.is-on { outline:1.5px solid var(--ink); outline-offset:3px; }
+    .pen-eraser { border:1px dashed var(--ink); background:transparent; }
+    .booth-guide { margin:0; font-size:11px; line-height:1.9; color:#444; word-break:keep-all; }
+    .booth-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+    @media (max-width:760px) { .booth-body { grid-template-columns:minmax(0,1fr); } .booth-live, .booth-result { height:56vh; } }
+  </style>
+</head>
+<body>
+  <div class="bar"><span>gyeyoyl · GESTURE TEST</span><span>저장되지 않는 시험 페이지</span></div>
+
+  <div class="wrap">
+    <div class="kicker"><span>GUEST</span><span>착수 동작 A · 집어서 톡 내리기</span><span id="count">00 STONES</span></div>
+
+    <div class="layout">
+      <svg id="board" viewBox="0 0 400 400" aria-label="바둑판">
+        <g id="grid"></g>
+        <g id="stones"></g>
+        <g id="cursor" style="display:none">
+          <circle id="cursor-ring" r="11" fill="none" stroke="#14040A" stroke-width="1.5"></circle>
+          <circle id="cursor-fill" r="9.4" fill="#EB4587" opacity="0"></circle>
+        </g>
+      </svg>
+
+      <div class="side">
+        <div class="cam">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+          <div class="cam-off">손 인식 꺼짐 · 글을 쓰면 켜져요</div>
+        </div>
+
+        <div id="status" class="status">캠 켜기를 눌러 시작하세요.</div>
+        <div id="debug" class="debug"></div>
+        <div><button id="start" type="button">캠 켜기</button></div>
+
+        <textarea id="message" rows="2" maxlength="200" placeholder="기억 재생성소"></textarea>
+        <button id="booth-open" class="booth-open-btn" type="button" hidden>포토부스</button>
+        <div id="note" class="note">글을 쓰고, 검지와 중지를 붙여 돌을 집은 모양을 만든 다음 원하는 자리에서 손을 아래로 톡 내리세요.</div>
+
+        <div class="row">
+          <span>민감도</span>
+          <input id="sensitivity" type="range" min="1" max="10" step="1" value="5">
+          <span id="sens-value">5</span>
+        </div>
+
+        <p class="guide">
+          1. 검지·중지를 나란히 붙여 펴고 나머지는 접어요 (바둑돌 집는 손).<br>
+          2. 손을 움직이면 바둑판 위 동그라미가 따라와요. 집은 모양이면 분홍으로 채워져요.<br>
+          3. 원하는 자리에서 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 톡 내리면 착수돼요.<br>
+          4. 손 인식은 글이 있을 때만 켜져요. 착수하면 글이 비워지고 손 인식이 꺼져요. 다음 돌은 새 글을 쓰면 다시 둘 수 있어요.<br>
+          5. 돌은 분홍 → 검정 → 분홍 … 순서로 번갈아 놓여요.<br>
+          캠이 없으면 바둑판을 눌러도 돼요. 영상은 이 컴퓨터 안에서만 처리되고 저장·전송되지 않아요.
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 포토부스 팝업 -->
+  <div id="booth" class="booth" hidden role="dialog" aria-label="포토부스">
+    <div class="booth-panel">
+      <div class="booth-head"><span>PHOTO BOOTH · 네 컷</span><button id="booth-close" type="button">닫기</button></div>
+      <div class="booth-body">
+        <div class="booth-stage">
+          <div id="booth-live" class="booth-live">
+            <video id="booth-video" playsinline muted></video>
+            <div id="booth-shot" class="booth-shot"></div>
+            <div id="booth-count" class="booth-count"></div>
+            <div id="booth-flash" class="booth-flash"></div>
+          </div>
+          <div id="booth-result" class="booth-result" hidden>
+            <canvas id="booth-photo"></canvas>
+            <canvas id="booth-ink"></canvas>
+            <canvas id="booth-cursor"></canvas>
+          </div>
+        </div>
+        <div class="booth-side">
+          <div id="booth-status" class="booth-status">네 컷을 찍어요. 준비되면 촬영 시작을 눌러 주세요.</div>
+          <div class="booth-buttons"><button id="booth-shoot" type="button">촬영 시작</button></div>
+          <div id="booth-tools" class="booth-tools" hidden>
+            <div class="pens">
+              <span class="pen is-on" data-pen="#14040A" role="button" tabindex="0" aria-label="검정 펜" style="background:#14040A"></span>
+              <span class="pen" data-pen="#EB4587" role="button" tabindex="0" aria-label="분홍 펜" style="background:#EB4587"></span>
+              <span class="pen pen-eraser" data-pen="eraser" role="button" tabindex="0" aria-label="지우개"></span>
+            </div>
+            <p class="booth-guide">
+              · 마우스로 사진 위에 그려요. 펜 색은 위 동그라미로 골라요.<br>
+              · 점선 동그라미를 고르면 지우개가 돼요.<br>
+              · 다 꾸몄으면 공유하기를 눌러 AirDrop으로 휴대폰에 보내요.
+            </p>
+            <div class="booth-buttons">
+              <button id="booth-share" type="button">공유하기 (AirDrop)</button>
+              <button id="booth-save" type="button">사진 저장</button>
+              <button id="booth-clear" type="button">펜 자국 모두 지우기</button>
+              <button id="booth-retake" type="button">다시 찍기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // DETECTOR START — 착수 동작 A 판별 (화면과 무관한 계산만)
+    // =====================================================
+    // 손 모양 읽기 (MediaPipe 손 관절 21개 기준)
+    //  0 손목 · 검지 5-6-7-8 · 중지 9-10-11-12 · 약지 13-14-15-16 · 새끼 17-18-19-20 (끝 번호가 손가락 끝)
+    function classifyHand(lm) {
+      const d = (a, b) => Math.hypot(lm[a].x - lm[b].x, lm[a].y - lm[b].y);
+      const size = d(0, 9) || 1e-6;                       // 손 크기 = 손목~중지 뿌리
+      const straight = (tip, pip) => d(0, tip) > d(0, pip) * 1.15;  // 손가락이 펴짐
+      const folded = (tip, pip) => d(0, tip) < d(0, pip) * 1.0;     // 손가락 끝이 마디보다 손목 쪽 = 접힘
+
+      const index = straight(8, 6), middle = straight(12, 10), ring = straight(16, 14), pinky = straight(20, 18);
+      const ringFolded = folded(16, 14), pinkyFolded = folded(20, 18), middleFolded = folded(12, 10);
+      const together = d(8, 12) < 0.35 * size;            // 검지·중지 끝이 바짝 붙음
+
+      return {
+        size,
+        // 돌 집기: 검지·중지만 펴서 붙이고, 약지·새끼는 접기
+        grip: index && middle && together && ringFolded && pinkyFolded,
+        // 펜: 검지만 펴고 나머지는 접기
+        point: index && middleFolded && ringFolded && pinkyFolded,
+        // 지우개: 네 손가락 모두 펴기 (손바닥 펼침)
+        open: index && middle && ring && pinky && d(8, 20) > 0.6 * size
+      };
+    }
+
+    function createPlaceDetector(options = {}) {
+      const settings = {
+        dropRatio: 0.10,     // 짧은 시간 안에 내려가야 하는 거리 (화면 높이 비율)
+        pushRatio: 1.35,     // 카메라 쪽으로 미는 동작: 손 크기가 이만큼 커지면 인정
+        steadyMs: 250,       // 내리기 직전, 이 시간 동안 한 자리에 머물러 있어야 함 (조준)
+        steadyRange: 0.04,   // 머무를 때 허용되는 흔들림
+        windowMs: 320,       // "짧고 빠르게"의 기준 시간
+        aimMs: 400,          // 집은 모양을 이만큼 유지해야 조준 완료
+        graceMs: 160,        // 빠르게 움직일 때 집은 모양이 잠깐 끊겨도 봐주는 시간
+        cooldownMs: 900,     // 착수 후 쉬는 시간
+        ...options
+      };
+
+      const history = [];   // { t, x, y, size, grip }
+      let gripStart = null;
+      let lastGripTime = -Infinity;
+      let armed = true;      // 착수 후 손가락을 벌렸다 다시 집어야 다음 착수
+      let cooldownUntil = -Infinity;
+
+      const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+      function readHand(lm) {
+        const shape = classifyHand(lm);
+        const size = shape.size;
+        const grip = shape.grip;
+        // 화면은 거울처럼 보이므로 x를 뒤집음
+        const x = 1 - (lm[8].x + lm[12].x) / 2;
+        const y = (lm[8].y + lm[12].y) / 2;
+        return { x, y, size, grip };
+      }
+
+      // allowPlace가 false면 손 위치·모양만 읽고 착수는 하지 않음 (글이 비어 있을 때)
+      function update(landmarks, t, allowPlace = true) {
+        if (!landmarks) {
+          gripStart = null;
+          armed = true;
+          history.length = 0;
+          return { hand: false, grip: false, aimed: false, place: null };
+        }
+
+        const hand = readHand(landmarks);
+        history.push({ t, ...hand });
+        while (history.length && t - history[0].t > settings.windowMs + settings.steadyMs + 300) history.shift();
+
+        if (hand.grip) {
+          lastGripTime = t;
+          if (gripStart === null) gripStart = t;
+        } else if (t - lastGripTime > settings.graceMs) {
+          gripStart = null;
+          armed = true; // 손가락을 벌리면 다음 착수 준비
+        }
+
+        const gripRecent = t - lastGripTime <= settings.graceMs;
+        const aimed = gripStart !== null && t - gripStart >= settings.aimMs;
+        let place = null;
+
+        if (allowPlace && gripRecent && aimed && armed && t >= cooldownUntil) {
+          // 최근 windowMs 안에서 가장 높이 있던 순간(= 내리기 시작한 자리)
+          const recent = history.filter((h) => t - h.t <= settings.windowMs);
+          const top = recent.reduce((a, b) => (b.y < a.y ? b : a), recent[0]);
+          const drop = hand.y - top.y;
+          const push = hand.size / top.size;
+
+          // 내리기 직전에 한 자리에 잠시 머물렀는지 (손을 옮기는 중에 실수로 착수되는 것 방지)
+          const before = history.filter((h) => h.t >= top.t - settings.steadyMs && h.t <= top.t);
+          const steady = before.length >= 3 &&
+            before.every((h) => Math.hypot(h.x - top.x, h.y - top.y) <= settings.steadyRange) &&
+            before.filter((h) => h.grip).length >= before.length * 0.8;   // 조준하는 동안 계속 집은 모양
+
+          // 아래로 "톡"은 거의 수직이어야 함 (대각선으로 손을 옮기는 건 착수 아님)
+          const sideways = Math.abs(hand.x - top.x);
+          const straightDown = sideways <= Math.max(0.03, drop * 0.5);
+
+          // 정확한 동작만: 멈춰서 조준 → 수직으로 톡 내리기 (카메라 쪽으로 밀기는 인정하지 않음)
+          // 내리기 시작하기 전에 집은 모양을 충분히(aimMs) 유지했어야 함
+          const aimedBeforeDrop = gripStart !== null && top.t - gripStart >= settings.aimMs;
+
+          if (steady && aimedBeforeDrop && drop >= settings.dropRatio && straightDown) {
+            place = { x: top.x, y: top.y, drop, push };
+            armed = false;
+            cooldownUntil = t + settings.cooldownMs;
+          }
+        }
+
+        return { hand: true, grip: hand.grip, aimed, x: hand.x, y: hand.y, place };
+      }
+
+      function setSensitivity(level) {
+        // 1(둔감) ~ 10(민감): 내려야 하는 거리 0.16 ~ 0.02 (기본 5 = 0.10)
+        settings.dropRatio = 0.18 - level * 0.016;
+        settings.pushRatio = 1.5 - level * 0.03;
+      }
+
+      return { update, setSensitivity, settings };
+    }
+
+    // 손 위치(화면 비율) → 바둑판 교차점 (화면 가운데 영역을 판 전체에 대응)
+    function toBoardPoint(x, y) {
+      const area = { left: 0.2, right: 0.8, top: 0.15, bottom: 0.75 };
+      const nx = (x - area.left) / (area.right - area.left);
+      const ny = (y - area.top) / (area.bottom - area.top);
+      const clamp = (v) => Math.max(0, Math.min(18, Math.round(v * 18)));
+      return { x: clamp(nx), y: clamp(ny) };
+    }
+    // DETECTOR END
+  </script>
+
+  <script type="module">
+    const $ = (s) => document.querySelector(s);
+    const NS = "http://www.w3.org/2000/svg";
+    const PAD = 20, GAP = 20, LINES = 19, R = 9.4;
+
+    // 바둑판 그리기
+    const grid = $("#grid");
+    for (let i = 0; i < LINES; i++) {
+      const p = PAD + i * GAP, end = PAD + 18 * GAP;
+      [[PAD, p, end, p], [p, PAD, p, end]].forEach(([x1, y1, x2, y2]) => {
+        const l = document.createElementNS(NS, "line");
+        Object.entries({ x1, y1, x2, y2, stroke: "#14040A", "stroke-width": i === 0 || i === 18 ? 1.6 : 0.6 })
+          .forEach(([k, v]) => l.setAttribute(k, v));
+        grid.appendChild(l);
+      });
+    }
+    [3, 9, 15].forEach((a) => [3, 9, 15].forEach((b) => {
+      const d = document.createElementNS(NS, "circle");
+      d.setAttribute("cx", PAD + a * GAP); d.setAttribute("cy", PAD + b * GAP);
+      d.setAttribute("r", 2.6); d.setAttribute("fill", "#14040A");
+      grid.appendChild(d);
+    }));
+
+    const stones = [];
+    function placeStone(px, py, how) {
+      const msg = $("#message").value.trim();
+      if (!msg) {
+        $("#status").textContent = "글을 먼저 써 주세요. 글이 있어야 돌을 둘 수 있어요.";
+        $("#message").focus();
+        return;
+      }
+      // 분홍 → 검정 → 분홍 → 검정 … 번갈아
+      const isPink = stones.length % 2 === 0;
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", PAD + px * GAP); c.setAttribute("cy", PAD + py * GAP);
+      c.setAttribute("r", R); c.setAttribute("fill", isPink ? "#EB4587" : "#3a3a3a"); c.setAttribute("class", "is-new");
+      $("#stones").appendChild(c);
+      stones.push({ px, py, msg });
+      $("#count").textContent = `${String(stones.length).padStart(2, "0")} STONES`;
+      $("#note").textContent = msg;
+      $("#note").classList.toggle("is-black", !isPink);
+      $("#message").value = "";
+      $("#status").textContent = `착수! (${how}) · 가로 ${px + 1}, 세로 ${py + 1} · 다음 글을 쓰면 손 인식이 다시 켜져요.`;
+      // 방명록을 남기면 포토부스 버튼 등장
+      $("#booth-open").hidden = false;
+    }
+
+    // 캠이 없을 때: 클릭으로 두기
+    $("#board").addEventListener("click", (e) => {
+      const r = e.currentTarget.getBoundingClientRect(), k = 400 / r.width;
+      const px = Math.round(((e.clientX - r.left) * k - PAD) / GAP);
+      const py = Math.round(((e.clientY - r.top) * k - PAD) / GAP);
+      if (px >= 0 && py >= 0 && px < LINES && py < LINES) placeStone(px, py, "클릭");
+    });
+
+    const detector = createPlaceDetector();
+    const sens = $("#sensitivity");
+    const applySens = () => { detector.setSensitivity(Number(sens.value)); $("#sens-value").textContent = sens.value; };
+    sens.addEventListener("input", applySens); applySens();
+
+    // 캠 + 손 인식
+    const MP_VERSION = "0.10.14";
+    let landmarker = null;
+    let landmarkerMode = "";
+    let switchToCpu = null;   // GPU가 실제로 안 될 때 CPU로 바꾸는 함수
+
+    // 카메라 오류를 이해하기 쉬운 말로
+    function cameraErrorText(error) {
+      const name = error && error.name;
+      if (name === "NotAllowedError" || name === "SecurityError")
+        return "카메라 사용이 막혀 있어요. ① 주소창 왼쪽 아이콘에서 카메라를 '허용'으로 바꾸고, ② 맥 '시스템 설정 → 개인정보 보호 및 보안 → 카메라'에서 지금 쓰는 브라우저가 켜져 있는지 확인한 뒤 새로고침해 주세요.";
+      if (name === "NotFoundError" || name === "OverconstrainedError")
+        return "연결된 카메라를 찾지 못했어요.";
+      if (name === "NotSupportedError")
+        return "지금 연 화면에서는 카메라를 쓸 수 없어요. VS Code 안의 미리보기 창이라면 주소를 복사해서 Chrome이나 Safari에서 직접 열어 주세요.";
+      if (name === "NotReadableError" || name === "AbortError")
+        return "다른 프로그램(Zoom, FaceTime, Photo Booth 등)이 카메라를 쓰고 있는 것 같아요. 그 프로그램을 닫고 다시 눌러 주세요.";
+      return "카메라를 켜지 못했어요.";
+    }
+
+    async function start() {
+      const status = $("#status");
+      const debug = $("#debug");
+      $("#start").disabled = true;
+
+      // 1단계: 이 주소에서 캠을 쓸 수 있는지
+      if (location.protocol === "file:" || !window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        status.textContent = location.protocol === "file:"
+          ? "파일을 더블클릭해서 연 상태라 캠을 쓸 수 없어요. GitHub 사이트 주소(https)나 VS Code Live Server로 열어 주세요."
+          : "이 주소에서는 캠을 쓸 수 없어요. https 주소나 localhost로 열어 주세요.";
+        debug.textContent = `주소: ${location.href}`;
+        $("#start").disabled = false;
+        return;
+      }
+
+      // 2단계: 카메라 켜기
+      const video = $("#video");
+      try {
+        status.textContent = "카메라를 켜는 중이에요…";
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } });
+        } catch (first) {
+          if (first && (first.name === "OverconstrainedError" || first.name === "NotFoundError")) {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          } else {
+            throw first;
+          }
+        }
+        video.srcObject = stream;
+        await video.play();
+      } catch (error) {
+        console.error(error);
+        status.textContent = cameraErrorText(error);
+        debug.textContent = `카메라 오류: ${error && error.name} · ${error && error.message}`;
+        $("#start").disabled = false;
+        return;
+      }
+
+      // 3단계 전: 손 인식에 필요한 그래픽 기능(WebGL)이 켜져 있는지 확인
+      const glCheck = document.createElement("canvas");
+      const hasWebGL2 = !!glCheck.getContext("webgl2");
+      const hasWebGL = hasWebGL2 || !!document.createElement("canvas").getContext("webgl");
+      if (!hasWebGL2) {
+        status.textContent = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent)
+          ? "이 브라우저에서 그래픽 기능(WebGL)이 꺼져 있어서 손 인식을 할 수 없어요. Chrome 설정 → 시스템 → '가능한 경우 그래픽 가속 사용'을 켜고 Chrome을 완전히 껐다 켜 주세요. 또는 Safari로 열어 보세요."
+          : "이 브라우저에서 그래픽 기능(WebGL)을 쓸 수 없어서 손 인식을 할 수 없어요. 다른 브라우저(Chrome 또는 Safari)로 열어 보세요.";
+        debug.textContent = `WebGL2: 없음 · WebGL: ${hasWebGL ? "있음" : "없음"}`;
+        $("#start").disabled = false;
+        return;
+      }
+
+      // 3단계: 손 인식 프로그램 불러오기 (실패해도 카메라 화면은 유지)
+      try {
+        status.textContent = "손 인식 프로그램을 불러오는 중이에요… (처음 한 번 몇 초 걸려요)";
+        const { FilesetResolver, HandLandmarker } =
+          await import(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/vision_bundle.mjs`);
+        const fileset = await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`);
+        const modelPath = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+        // 그래픽 가속(GPU)으로 먼저 시도하고, 안 되면 CPU로
+        const handOptions = (delegate) => ({
+          baseOptions: { modelAssetPath: modelPath, delegate },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.3,
+          minHandPresenceConfidence: 0.3,
+          minTrackingConfidence: 0.3
+        });
+        try {
+          landmarker = await HandLandmarker.createFromOptions(fileset, handOptions("GPU"));
+          landmarkerMode = "GPU";
+        } catch (gpuError) {
+          console.warn(gpuError);
+          landmarker = await HandLandmarker.createFromOptions(fileset, handOptions("CPU"));
+          landmarkerMode = "CPU";
+        }
+
+        switchToCpu = async () => {
+          try { landmarker.close(); } catch (e) {}
+          landmarker = await HandLandmarker.createFromOptions(fileset, handOptions("CPU"));
+          landmarkerMode = "CPU";
+        };
+
+        status.textContent = "손을 카메라에 보여 주세요.";
+        loop(video, HandLandmarker.HAND_CONNECTIONS);
+      } catch (error) {
+        console.error(error);
+        status.textContent = "카메라는 켜졌지만 손 인식 프로그램을 불러오지 못했어요. 인터넷 연결이나 광고 차단 프로그램을 확인해 주세요.";
+        debug.textContent = `손 인식 오류: ${error && error.name} · ${error && error.message}`;
+        $("#start").disabled = false;
+      }
+    }
+
+    // 공용 손 인식: 바둑판과 포토부스가 같은 인식기를 번갈아 씀
+    // - 카메라 화면을 가로 320px로 줄여서 인식 (처리량 감소, 비율은 원본 그대로)
+    // - 인식 시간값은 두 곳을 합쳐 항상 커지도록
+    const detectCanvas = document.createElement("canvas");
+    const detectCtx = detectCanvas.getContext("2d", { willReadFrequently: true });
+    let sharedStamp = 0;
+    function detectHand(video) {
+      const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
+      const w = 320, h = Math.round(320 * vh / vw);
+      if (detectCanvas.width !== w || detectCanvas.height !== h) {
+        detectCanvas.width = w;
+        detectCanvas.height = h;
+      }
+      detectCtx.drawImage(video, 0, 0, w, h);
+      sharedStamp = Math.max(performance.now(), sharedStamp + 1);
+      const result = landmarker.detectForVideo(detectCanvas, sharedStamp);
+      return { lm: result && result.landmarks && result.landmarks[0], stamp: sharedStamp };
+    }
+
+    // 손 뼈대 직접 그리기 (라이브러리 그리기 도구 대신)
+    function drawHand(ctx, lm, connections, w, h) {
+      ctx.strokeStyle = "#EB4587";
+      ctx.lineWidth = 3;
+      (connections || []).forEach((c) => {
+        const a = lm[c.start !== undefined ? c.start : c[0]];
+        const b = lm[c.end !== undefined ? c.end : c[1]];
+        if (!a || !b) return;
+        ctx.beginPath();
+        ctx.moveTo(a.x * w, a.y * h);
+        ctx.lineTo(b.x * w, b.y * h);
+        ctx.stroke();
+      });
+      ctx.fillStyle = "#14040A";
+      lm.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x * w, p.y * h, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function loop(video, connections) {
+      const canvas = $("#overlay"), ctx = canvas.getContext("2d");
+      const cursor = $("#cursor"), ring = $("#cursor-ring"), fill = $("#cursor-fill");
+
+      const INTERVAL = 66; // 약 1초에 15번
+      let frames = 0, handFrames = 0, lastError = "", lastCost = 0;
+      let errorStreak = 0, switching = false;
+      let recognitionOn = false;
+
+      function tick() {
+        const began = performance.now();
+        try {
+          // 포토부스가 열려 있으면 바둑판 손 인식은 쉼
+          const hasMessage = $("#message").value.trim().length > 0 && !boothOpen;
+          $(".cam").classList.toggle("is-off", !hasMessage);
+
+          if (!hasMessage) {
+            // 손 인식 꺼짐: 인식하지 않고, 커서·손 뼈대도 숨김
+            if (recognitionOn) {
+              recognitionOn = false;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              cursor.style.display = "none";
+              $("#status").classList.remove("grip");
+              detector.update(null, performance.now());
+            }
+            if (!/착수!/.test($("#status").textContent)) {
+              $("#status").textContent = "글을 쓰면 손 인식이 켜져요.";
+            }
+            $("#debug").textContent = `손 인식 꺼짐 (${landmarkerMode}) · 글을 쓰면 켜져요`;
+          } else if (video.readyState >= 2) {
+            if (!recognitionOn) {
+              recognitionOn = true;
+              $("#status").textContent = "손을 카메라에 보여 주세요.";
+            }
+            frames++;
+            const { lm, stamp } = detectHand(video);
+            if (lm) handFrames++;
+
+            if (canvas.width !== video.videoWidth) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (lm) drawHand(ctx, lm, connections, canvas.width, canvas.height);
+            errorStreak = 0;
+
+            const s = detector.update(lm || null, stamp, true);
+
+            if (!s.hand) {
+              cursor.style.display = "none";
+              $("#status").classList.remove("grip");
+              if (!/착수!/.test($("#status").textContent)) $("#status").textContent = "손을 카메라에 보여 주세요.";
+            } else {
+              const p = toBoardPoint(s.x, s.y);
+              cursor.style.display = "";
+              cursor.setAttribute("transform", `translate(${PAD + p.x * GAP} ${PAD + p.y * GAP})`);
+              fill.setAttribute("opacity", s.aimed ? 0.75 : s.grip ? 0.35 : 0);
+              fill.setAttribute("fill", stones.length % 2 === 0 ? "#EB4587" : "#3a3a3a");
+              ring.setAttribute("stroke", s.grip ? "#EB4587" : "#14040A");
+              $("#status").classList.toggle("grip", s.grip);
+
+              if (s.place) {
+                const at = toBoardPoint(s.place.x, s.place.y);
+                placeStone(at.x, at.y, "손동작");
+              } else if (!/착수!/.test($("#status").textContent) || !s.grip) {
+                $("#status").textContent = s.aimed ? "조준 완료 · 멈췄다가 톡 내리세요" : s.grip ? "돌을 집었어요" : "검지·중지를 붙여 돌을 집어 보세요";
+              }
+            }
+
+            $("#debug").textContent =
+              `인식 동작 중 (${landmarkerMode}) · 1회 ${Math.round(lastCost)}ms · 처리 ${frames}장 · 손 보임 ${handFrames}장\n` +
+              (s.hand
+                ? `집은 모양: ${s.grip ? "예" : "아니오"} · 조준: ${s.aimed ? "예" : "아니오"} · 손 위치: ${s.x.toFixed(2)}, ${s.y.toFixed(2)}`
+                : "손 없음") +
+              (lastError ? `\n최근 오류: ${lastError}` : "");
+          }
+        } catch (error) {
+          lastError = `${error && error.name} · ${error && error.message}`;
+          console.error(error);
+          errorStreak++;
+
+          // GPU 방식이 이 컴퓨터에서 계속 실패하면 CPU 방식으로 자동 전환
+          if (landmarkerMode === "GPU" && errorStreak >= 3 && !switching && switchToCpu) {
+            switching = true;
+            $("#status").textContent = "그래픽 가속이 안 돼서 다른 방식으로 바꾸는 중이에요…";
+            switchToCpu()
+              .then(() => { errorStreak = 0; lastError = ""; })
+              .catch((e) => { lastError = `CPU 전환 실패: ${e && e.message}`; })
+              .finally(() => { switching = false; setTimeout(tick, 0); });
+            return;
+          }
+
+          $("#debug").textContent = `인식 중 오류 (${landmarkerMode}): ${lastError}`;
+          $("#status").textContent = "손 인식 중 오류가 나고 있어요. 아래 회색 글씨를 알려주세요.";
+        }
+
+        lastCost = performance.now() - began;
+        // 처리 시간이 길어도 화면이 숨 쉴 틈(최소 20ms)을 두고 다음 인식
+        setTimeout(tick, Math.max(20, INTERVAL - lastCost));
+      }
+
+      setTimeout(tick, 0);
+    }
+
+    // =====================================================
+    // 포토부스: 네 컷 촬영 → 손동작으로 꾸미기 → 저장
+    // =====================================================
+    const CELL_W = 405, CELL_H = 720, CELL_GAP = 12;          // 한 컷 9:16, 컷 사이 간격
+    const STRIP_W = CELL_W * 2 + CELL_GAP * 3;                 // 846
+    const STRIP_H = CELL_H * 2 + CELL_GAP * 3;                 // 1476
+    const PEN_WIDTH = 7, ERASER_RADIUS = 70;
+
+    let boothOpen = false;
+    let boothMode = "idle";            // idle | shooting | decorate
+    let penColor = "#14040A";
+    let mouseTool = "pen";             // pen | eraser (마우스용)
+
+    const photoCanvas = $("#booth-photo"), inkCanvas = $("#booth-ink"), pointerCanvas = $("#booth-cursor");
+    [photoCanvas, inkCanvas, pointerCanvas].forEach((c) => { c.width = STRIP_W; c.height = STRIP_H; });
+    const photoCtx = photoCanvas.getContext("2d");
+    const inkCtx = inkCanvas.getContext("2d");
+    const pointerCtx = pointerCanvas.getContext("2d");
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const boothStatus = (text) => { $("#booth-status").textContent = text; };
+
+    // 사진 톤: 따뜻한 흑백(세피아) · 대비 · 살짝 바랜 검정 · 가장자리 어둡게 · 필름 입자
+    function applyFilmTone(ctx, w, h) {
+      const img = ctx.getImageData(0, 0, w, h);
+      const d = img.data;
+      const cx = w / 2, cy = h / 2, maxR = Math.hypot(cx, cy);
+      for (let i = 0; i < d.length; i += 4) {
+        const p = i / 4, x = p % w, y = (p / w) | 0;
+        let l = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+        const s = l < 0.5 ? 2 * l * l : 1 - 2 * (1 - l) * (1 - l);   // S자 대비
+        l = 0.6 * s + 0.4 * l;
+        l = 0.06 + l * 0.88;                                          // 바랜 느낌 (검정이 살짝 뜸)
+        const r = Math.hypot(x - cx, y - cy) / maxR;
+        l *= 1 - 0.38 * r * r;                                        // 비네팅
+        l += (Math.random() - 0.5) * 0.07;                            // 필름 입자
+        const v = Math.max(0, Math.min(1, l)) * 255;
+        d[i] = Math.min(255, v * 1.07 + 8);                           // 따뜻한 갈색 톤
+        d[i + 1] = Math.min(255, v * 0.97 + 3);
+        d[i + 2] = Math.min(255, v * 0.82);
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    // 한 컷 찍기: 카메라 화면 가운데를 9:16으로 잘라 거울처럼 뒤집어 담기
+    function captureCell(index) {
+      const video = $("#video");
+      const vw = video.videoWidth, vh = video.videoHeight;
+      const ratio = CELL_W / CELL_H;
+      let sw = vh * ratio, sh = vh;
+      if (sw > vw) { sw = vw; sh = vw / ratio; }
+      const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+
+      const cell = document.createElement("canvas");
+      cell.width = CELL_W; cell.height = CELL_H;
+      const c = cell.getContext("2d", { willReadFrequently: true });
+      c.translate(CELL_W, 0); c.scale(-1, 1);
+      c.drawImage(video, sx, sy, sw, sh, 0, 0, CELL_W, CELL_H);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      applyFilmTone(c, CELL_W, CELL_H);
+
+      const col = index % 2, row = Math.floor(index / 2);
+      photoCtx.drawImage(cell, CELL_GAP + col * (CELL_W + CELL_GAP), CELL_GAP + row * (CELL_H + CELL_GAP));
+    }
+
+    async function shootFour() {
+      if (boothMode === "shooting") return;   // 촬영 중 중복 실행 방지
+      boothMode = "shooting";
+      $("#booth-result").hidden = true;
+      $("#booth-live").hidden = false;
+      $("#booth-tools").hidden = true;
+      $("#booth-shoot").disabled = true;
+
+      photoCtx.fillStyle = "#17110d";                                // 컷 사이 테두리 색
+      photoCtx.fillRect(0, 0, STRIP_W, STRIP_H);
+      inkCtx.clearRect(0, 0, STRIP_W, STRIP_H);
+
+      for (let i = 0; i < 4; i++) {
+        if (!boothOpen) return;
+        $("#booth-shot").textContent = `${i + 1} / 4`;
+        boothStatus(`${i + 1}번째 컷을 찍어요. 포즈를 잡아 주세요.`);
+        for (let n = 3; n >= 1; n--) {
+          $("#booth-count").textContent = n;
+          await sleep(1000);
+          if (!boothOpen) return;
+        }
+        $("#booth-count").textContent = "";
+        captureCell(i);
+        const flash = $("#booth-flash");
+        flash.classList.add("on");
+        await sleep(60);
+        flash.classList.remove("on");
+        await sleep(700);
+      }
+
+      $("#booth-shot").textContent = "";
+      $("#booth-live").hidden = true;
+      $("#booth-result").hidden = false;
+      $("#booth-tools").hidden = false;
+      $("#booth-shoot").disabled = false;
+      $("#booth-shoot").textContent = "새로 찍기";
+      boothMode = "decorate";
+      boothStatus("네 컷 완성! 마우스로 꾸민 뒤 공유하기를 눌러 보내세요.");
+      prepareShareFile();
+    }
+
+    // ---- 그리기 / 지우기 (손·마우스 공용) ----
+    function inkLine(from, to, tool, color) {
+      inkCtx.save();
+      inkCtx.lineCap = "round";
+      inkCtx.lineJoin = "round";
+      if (tool === "eraser") {
+        inkCtx.globalCompositeOperation = "destination-out";
+        inkCtx.lineWidth = ERASER_RADIUS * 2;
+        inkCtx.strokeStyle = "#000";
+      } else {
+        inkCtx.lineWidth = PEN_WIDTH;
+        inkCtx.strokeStyle = color;
+      }
+      inkCtx.beginPath();
+      inkCtx.moveTo(from.x, from.y);
+      inkCtx.lineTo(to.x + 0.01, to.y);
+      inkCtx.stroke();
+      inkCtx.restore();
+    }
+
+    function drawPointer(pos, tool) {
+      pointerCtx.clearRect(0, 0, STRIP_W, STRIP_H);
+      if (!pos) return;
+      pointerCtx.save();
+      if (tool === "eraser") {
+        pointerCtx.setLineDash([10, 8]);
+        pointerCtx.strokeStyle = "#f5f5f5";
+        pointerCtx.lineWidth = 3;
+        pointerCtx.beginPath();
+        pointerCtx.arc(pos.x, pos.y, ERASER_RADIUS, 0, Math.PI * 2);
+        pointerCtx.stroke();
+      } else if (tool === "pen") {
+        pointerCtx.fillStyle = penColor;
+        pointerCtx.strokeStyle = "#f5f5f5";
+        pointerCtx.lineWidth = 2;
+        pointerCtx.beginPath();
+        pointerCtx.arc(pos.x, pos.y, 9, 0, Math.PI * 2);
+        pointerCtx.fill();
+        pointerCtx.stroke();
+      } else {
+        pointerCtx.strokeStyle = "#f5f5f5";
+        pointerCtx.lineWidth = 2;
+        pointerCtx.beginPath();
+        pointerCtx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+        pointerCtx.stroke();
+      }
+      pointerCtx.restore();
+    }
+
+    // 마우스·터치로 그리기
+    let mouseDown = false, mouseLast = null;
+    function toStrip(event) {
+      const r = pointerCanvas.getBoundingClientRect();
+      return { x: (event.clientX - r.left) * STRIP_W / r.width, y: (event.clientY - r.top) * STRIP_H / r.height };
+    }
+    pointerCanvas.addEventListener("pointerdown", (e) => {
+      if (boothMode !== "decorate") return;
+      mouseDown = true;
+      pointerCanvas.setPointerCapture(e.pointerId);
+      mouseLast = toStrip(e);
+      inkLine(mouseLast, mouseLast, mouseTool, penColor);
+    });
+    pointerCanvas.addEventListener("pointermove", (e) => {
+      if (boothMode !== "decorate") return;
+      const p = toStrip(e);
+      drawPointer(p, mouseTool);                 // 펜/지우개 위치 미리 보기
+      if (!mouseDown) return;
+      inkLine(mouseLast, p, mouseTool, penColor);
+      mouseLast = p;
+    });
+    pointerCanvas.addEventListener("pointerleave", () => { if (!mouseDown) drawPointer(null); });
+    ["pointerup", "pointercancel"].forEach((n) => pointerCanvas.addEventListener(n, () => {
+      if (mouseDown) prepareShareFile();         // 그린 내용이 바뀌면 공유용 사진 다시 준비
+      mouseDown = false;
+      mouseLast = null;
+    }));
+
+    // 펜 색 / 마우스 지우개 고르기
+    document.querySelectorAll(".pen").forEach((pen) => {
+      const choose = () => {
+        document.querySelectorAll(".pen").forEach((o) => o.classList.toggle("is-on", o === pen));
+        if (pen.dataset.pen === "eraser") {
+          mouseTool = "eraser";
+        } else {
+          mouseTool = "pen";
+          penColor = pen.dataset.pen;
+        }
+      };
+      pen.addEventListener("click", choose);
+      pen.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(); } });
+    });
+
+    // 사진 + 펜 자국을 한 장의 PNG 파일로
+    let shareFile = null;
+    let shareVersion = 0;
+    function photoFileName() {
+      const now = new Date();
+      const two = (n) => String(n).padStart(2, "0");
+      return `gyeyoyl-photobooth-${now.getFullYear()}${two(now.getMonth() + 1)}${two(now.getDate())}-${two(now.getHours())}${two(now.getMinutes())}.png`;
+    }
+    function makePhotoBlob() {
+      return new Promise((resolve) => {
+        const out = document.createElement("canvas");
+        out.width = STRIP_W; out.height = STRIP_H;
+        const o = out.getContext("2d");
+        o.drawImage(photoCanvas, 0, 0);
+        o.drawImage(inkCanvas, 0, 0);
+        out.toBlob(resolve, "image/png");
+      });
+    }
+    // 공유 창은 버튼을 누른 "그 순간"에 열어야 해서(Safari 규칙), 사진 파일을 미리 만들어 둠
+    async function prepareShareFile() {
+      const version = ++shareVersion;
+      shareFile = null;
+      const blob = await makePhotoBlob();
+      if (version === shareVersion && blob) {
+        shareFile = new File([blob], photoFileName(), { type: "image/png" });
+      }
+    }
+
+    // 공유하기 (Mac Safari: AirDrop · 메시지 · 메일 등이 있는 공유 창)
+    $("#booth-share").addEventListener("click", () => {
+      if (!shareFile) {
+        boothStatus("사진을 준비하는 중이에요. 잠시 뒤 다시 눌러 주세요.");
+        prepareShareFile();
+        return;
+      }
+      const data = { files: [shareFile], title: "gyeyoyl photo booth" };
+      if (!navigator.share || !navigator.canShare || !navigator.canShare(data)) {
+        boothStatus("이 브라우저에서는 공유하기를 쓸 수 없어요. 맥의 Safari에서 열면 AirDrop으로 보낼 수 있어요.");
+        return;
+      }
+      navigator.share(data)
+        .then(() => boothStatus("공유했어요!"))
+        .catch((error) => {
+          if (error && error.name === "AbortError") boothStatus("공유를 취소했어요.");
+          else boothStatus(`공유하지 못했어요. (${error && error.name})`);
+        });
+    });
+
+    // 사진 저장 (이 컴퓨터의 다운로드 폴더)
+    $("#booth-save").addEventListener("click", async () => {
+      const blob = await makePhotoBlob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = photoFileName();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      boothStatus("사진을 저장했어요. 다운로드 폴더를 확인해 주세요.");
+    });
+
+    $("#booth-clear").addEventListener("click", () => { inkCtx.clearRect(0, 0, STRIP_W, STRIP_H); prepareShareFile(); });
+    $("#booth-retake").addEventListener("click", () => shootFour());
+    $("#booth-shoot").addEventListener("click", () => shootFour());
+
+    // 열기 / 닫기
+    async function openBooth() {
+      if (!$("#video").srcObject) {
+        await start();                     // 캠이 꺼져 있으면 먼저 켜기
+      }
+      const stream = $("#video").srcObject;
+      $("#booth").hidden = false;
+      boothOpen = true;
+      boothMode = "idle";
+      $("#booth-live").hidden = false;
+      $("#booth-result").hidden = true;
+      $("#booth-tools").hidden = true;
+      $("#booth-shoot").disabled = !stream;
+      $("#booth-shoot").textContent = "촬영 시작";
+      $("#booth-count").textContent = "";
+      $("#booth-shot").textContent = "";
+      if (stream) {
+        const bv = $("#booth-video");
+        bv.srcObject = stream;
+        bv.play().catch(() => {});
+        boothStatus("네 컷을 찍어요. 준비되면 촬영 시작을 눌러 주세요. 한 컷마다 3초를 세요.");
+      } else {
+        boothStatus("카메라가 켜져 있지 않아요. 바깥의 '캠 켜기'로 카메라를 먼저 켜 주세요.");
+      }
+    }
+
+    function closeBooth() {
+      boothOpen = false;
+      boothMode = "idle";
+      $("#booth").hidden = true;
+      drawPointer(null);
+    }
+
+    $("#booth-open").addEventListener("click", openBooth);
+    $("#booth-close").addEventListener("click", closeBooth);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && boothOpen) closeBooth(); });
+
+    $("#start").addEventListener("click", start);
+  </script>
+</body>
+</html>
