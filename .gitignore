@@ -1,0 +1,36 @@
+# ===== 비밀 정보 (절대 GitHub에 올리면 안 되는 것) =====
+# 방명록 저장 서비스(Supabase, Firebase 등) 비밀 키, AI API 키 등을 넣는 파일
+.env
+.env.*
+!.env.example
+
+# 키·인증서 파일
+*.pem
+*.key
+*.p12
+*.cert
+*.crt
+secrets.json
+credentials.json
+service-account*.json
+*-adminsdk-*.json
+
+# ===== 맥 / 편집기가 만드는 파일 =====
+.DS_Store
+._*
+.vscode/
+.idea/
+*.swp
+
+# ===== 설치·빌드 파일 =====
+node_modules/
+npm-debug.log*
+dist/
+build/
+.cache/
+
+# ===== 배포 도구 설정 (토큰이 들어갈 수 있음) =====
+.vercel/
+.netlify/
+.firebase/
+.supabase/
