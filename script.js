@@ -4,6 +4,7 @@
   const home = $("#home-view");
   const listing = $("#listing-view");
   const postView = $("#post-view");
+  const guestView = $("#guest-view");
   const backButton = $("#back-button");
   const notice = $("#notice");
 
@@ -35,6 +36,7 @@
   let currentCategory = null;
   let currentPost = null;
   let historyStack = [];
+  let currentView = "home";
   let shuffled = false;
 
   // 알림
@@ -62,6 +64,15 @@
     })[char]);
   }
 
+// 게시물 제목으로 손글씨 이미지 경로 자동 생성
+// (posts.json에 titleImage가 있으면 그 이름의 이미지를 사용)
+function getTitleImage(post) {
+  const name = post.titleImage || post.title;
+
+  if (!name) return null;
+
+  return `images/titles/${name}.png`;
+}
   // 게시물 미리보기 문장 만들기
 function excerpt(markdown = "") {
   return markdown
@@ -136,8 +147,13 @@ function excerpt(markdown = "") {
     home.hidden = view !== "home";
     listing.hidden = view !== "listing";
     postView.hidden = view !== "post";
+    guestView.hidden = view !== "guest";
 
     backButton.hidden = view === "home";
+    currentView = view;
+
+    // 현재 화면 이름을 body에 표시 (CSS에서 글 화면일 때 헤더 문구 숨김)
+    document.body.dataset.view = view;
 
     window.scrollTo({
       top: 0,
@@ -149,10 +165,39 @@ function excerpt(markdown = "") {
   function pushState(state) {
     historyStack.push(state);
 
-    if (historyStack.length > 80) {
-      historyStack.shift();
+    // 브라우저 기록에도 한 칸 추가
+    // → 트랙패드 스와이프·브라우저 뒤로 버튼·휴대폰 뒤로 가기가 사이트 안에서 작동
+    history.pushState({ portfolio: true, depth: historyStack.length }, "");
+  }
+
+  // 뒤로 가기 요청 (BACK 버튼, 키보드, 위로 당기기 제스처)
+  // 브라우저 기록을 통해 뒤로 가서, 스와이프와 똑같이 동작하게 함
+  function requestBack() {
+    if (historyStack.length > 0 && history.state && history.state.portfolio) {
+      history.back();
+    } else {
+      goBack();
     }
   }
+
+  // 브라우저 기록이 바뀌었을 때 (스와이프, 브라우저 뒤로/앞으로 버튼)
+  window.addEventListener("popstate", (event) => {
+    const depth = event.state && event.state.portfolio
+      ? event.state.depth
+      : 0;
+
+    if (depth < historyStack.length) {
+      // 뒤로 가기: 기록 깊이에 맞을 때까지 한 단계씩 뒤로
+      while (historyStack.length > depth) {
+        goBack();
+      }
+    } else if (depth > historyStack.length) {
+      // 앞으로 가기는 지원하지 않으므로 원래 위치로 되돌림
+      history.go(historyStack.length - depth);
+    }
+  });
+
+  history.replaceState({ portfolio: true, depth: 0 }, "");
 
   // 카테고리 열기
   function openCategory(category, save = true) {
@@ -181,7 +226,9 @@ function excerpt(markdown = "") {
 
     $("#listing-number").textContent = meta.number;
 
-    $("#listing-title").textContent = meta.title;
+    $("#listing-title").innerHTML = `
+  <img src="images/${category}.png" alt="${meta.title}">
+`;
 
     $("#listing-description").textContent = meta.description;
 
@@ -228,9 +275,18 @@ function excerpt(markdown = "") {
 
         <span class="card-info">
           <span class="card-title">
-            ${escapeHtml(post.title)}
+            ${
+              getTitleImage(post)
+                ? `<img
+                    class="handwriting-post-title"
+                    src="${getTitleImage(post)}"
+                    alt="${escapeHtml(post.title)}"
+                    onerror="this.replaceWith(document.createTextNode(this.alt))"
+                  >`
+                : escapeHtml(post.title)
+            }
           </span>
-<br>
+
           <span class="card-excerpt">
             ${escapeHtml(post.excerpt || "")}
           </span>
@@ -275,36 +331,144 @@ function excerpt(markdown = "") {
     };
   }
 
-  // 이전 글 / 다음 글 제목 표시
-  function updatePostNavigation() {
-    const previousButton = $("#previous-post");
-    const previousTitle = $("#previous-post-title");
-    const nextButton = $("#next-post");
-    const nextTitle = $("#next-post-title");
+// 손글씨 PNG의 좌우 투명 여백을 화면에서만 잘라내기 (원본 파일은 그대로)
+// - 위아래 여백은 그대로 둬서 글씨 크기가 바뀌지 않게 함
+// - 가장자리에 떨어져 있는 아주 작은 점(먼지)은 무시함
+const trimmedTitleCache = {};
 
-    // HTML에 이전/다음 글 영역이 없다면 건너뜀
-    if (
-      !previousButton ||
-      !previousTitle ||
-      !nextButton ||
-      !nextTitle
-    ) {
-      return;
-    }
-
-    const { previous, next } = getAdjacentPosts();
-
-    previousTitle.textContent = previous
-      ? previous.title
-      : "Previous post not found";
-
-    nextTitle.textContent = next
-      ? next.title
-      : "Next post not found";
-
-    previousButton.disabled = !previous;
-    nextButton.disabled = !next;
+function trimTitleImage(img, src) {
+  if (trimmedTitleCache[src]) {
+    img.src = trimmedTitleCache[src];
+    return;
   }
+
+  const source = new Image();
+
+  source.onload = () => {
+    try {
+      const width = source.naturalWidth;
+      const height = source.naturalHeight;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(source, 0, 0);
+
+      const pixels = context.getImageData(0, 0, width, height).data;
+
+      // 세로줄마다 진한 픽셀 개수 세기
+      const columnInk = new Array(width).fill(0);
+      let totalInk = 0;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (pixels[(y * width + x) * 4 + 3] > 100) {
+            columnInk[x]++;
+          }
+        }
+      }
+
+      // 글씨가 있는 세로줄을 덩어리로 묶기 (30px 이상 떨어지면 다른 덩어리)
+      const groups = [];
+
+      for (let x = 0; x < width; x++) {
+        if (columnInk[x] < 3) continue;
+
+        const last = groups[groups.length - 1];
+
+        if (last && x - last.end <= 30) {
+          last.end = x;
+          last.ink += columnInk[x];
+        } else {
+          groups.push({ start: x, end: x, ink: columnInk[x] });
+        }
+
+        totalInk += columnInk[x];
+      }
+
+      // 양 끝의 아주 작은 덩어리(전체의 1% 미만)는 먼지로 보고 제외
+      while (groups.length > 1 && groups[0].ink < totalInk * 0.01) {
+        groups.shift();
+      }
+
+      while (groups.length > 1 && groups[groups.length - 1].ink < totalInk * 0.01) {
+        groups.pop();
+      }
+
+      if (groups.length === 0) return;
+
+      const left = Math.max(0, groups[0].start - 4);
+      const right = Math.min(width - 1, groups[groups.length - 1].end + 4);
+      const croppedWidth = right - left + 1;
+
+      const output = document.createElement("canvas");
+      output.width = croppedWidth;
+      output.height = height;
+      output.getContext("2d").drawImage(
+        source,
+        left, 0, croppedWidth, height,
+        0, 0, croppedWidth, height
+      );
+
+      trimmedTitleCache[src] = output.toDataURL("image/png");
+      img.src = trimmedTitleCache[src];
+    } catch (error) {
+      // 자르기에 실패하면 원본 이미지를 그대로 보여줌
+    }
+  };
+
+  source.src = src;
+}
+
+// 이전 글 / 다음 글 제목을 손글씨 이미지로 표시
+function updatePostNavigation() {
+const previousButton = $("#previous-post");
+const previousTitle = $("#previous-post-title");
+const nextButton = $("#next-post");
+const nextTitle = $("#next-post-title");
+
+if (!previousButton || !previousTitle || !nextButton || !nextTitle) {
+  return;
+}
+
+const { previous, next } = getAdjacentPosts();
+
+function renderTitle(element, post) {
+  if (!post) {
+    element.replaceChildren();
+    return;
+  }
+
+  const imagePath = getTitleImage(post);
+  const img = document.createElement("img");
+
+  img.src = imagePath;
+  img.alt = post.title;
+  img.className = "handwriting-post-title";
+
+  img.onerror = () => {
+    element.textContent = post.title;
+  };
+
+  element.replaceChildren(img);
+
+  // 손글씨 PNG의 좌우 투명 여백 자르기
+  trimTitleImage(img, imagePath);
+}
+
+renderTitle(previousTitle, previous);
+renderTitle(nextTitle, next);
+
+previousButton.disabled = !previous;
+nextButton.disabled = !next;
+
+// 이전/다음 글이 없으면 그쪽(PREVIOUS / NEXT 글자 포함)을 숨김
+previousButton.style.visibility = previous ? "" : "hidden";
+nextButton.style.visibility = next ? "" : "hidden";
+
+}
 
   // 사진이 있는 게시물은 사진과 본문을 분리해서 표시
 function setupPostImageLayout() {
@@ -316,18 +480,16 @@ function setupPostImageLayout() {
   let layout = postView.querySelector(".post-split-layout");
   let gallery = postView.querySelector(".post-image-gallery");
 
-  // 기존 레이아웃이 있다면 사진을 본문으로 복구
-  if (gallery) {
-    gallery.querySelectorAll("img").forEach((img) => {
-      const paragraph = document.createElement("p");
-      paragraph.appendChild(img);
-      postContent.appendChild(paragraph);
-    });
-
+  // 이전 글의 좌우 레이아웃이 남아 있다면,
+  // 본문 영역을 먼저 밖으로 꺼낸 뒤 레이아웃(이전 글 사진 포함)만 삭제
+  if (layout) {
+    layout.parentNode.insertBefore(postContent, layout);
     layout.remove();
     layout = null;
     gallery = null;
   }
+
+  postView.classList.remove("is-photo-only");
 
   const images = Array.from(postContent.querySelectorAll("img"));
 
@@ -382,7 +544,29 @@ function setupPostImageLayout() {
     }
   });
 
+  // 사진을 빼낸 자리에 남은 맨 앞 빈 줄바꿈 제거
+  // (본문 첫 줄이 사진 맨 윗선과 같은 높이에서 시작하도록)
+  const firstBlock = postContent.firstElementChild;
+
+  if (firstBlock) {
+    while (
+      firstBlock.firstChild &&
+      (
+        firstBlock.firstChild.nodeName === "BR" ||
+        (firstBlock.firstChild.nodeType === Node.TEXT_NODE &&
+          !firstBlock.firstChild.textContent.trim())
+      )
+    ) {
+      firstBlock.firstChild.remove();
+    }
+  }
+
   postView.classList.add("has-post-images");
+
+  // 글 없이 사진만 있는 글: 사진을 가운데에 크게 한 줄로 (아카이브 배치)
+  if (!postContent.textContent.trim()) {
+    postView.classList.add("is-photo-only");
+  }
 }
 
   // 게시물 열기
@@ -393,11 +577,15 @@ function setupPostImageLayout() {
 
     if (!post) return;
 
-    if (save) {
-      pushState({
-        view: "listing",
-        category: post.category
-      });
+    // 목록에서 글을 열 때만 뒤로 가기 기록 추가
+    // (글에서 이전/다음 글로 넘어갈 때는 추가하지 않아, 뒤로 가면 바로 목록으로)
+    if (save && !currentPost) {
+      // GUEST 화면에서 출처를 눌러 들어온 경우, 뒤로 가면 GUEST로 돌아감
+      pushState(
+        currentView === "guest"
+          ? { view: "guest" }
+          : { view: "listing", category: post.category }
+      );
     }
 
     currentPost = post;
@@ -408,8 +596,8 @@ function setupPostImageLayout() {
 
     $("#post-date").textContent = post.date || "UNDATED";
 
-    $("#post-id").textContent =
-      `MOVE ${String(post.id).padStart(2, "0")}`;
+    // 글 번호(MOVE) 대신 글 제목만 표시
+    $("#post-id").textContent = post.title;
 
     // Markdown 본문 표시
     if (window.marked) {
@@ -465,12 +653,356 @@ function setupPostImageLayout() {
       openPost(state.postId, false);
     } else if (state.view === "listing" && state.category) {
       openCategory(state.category, false);
+    } else if (state.view === "guest") {
+      openGuest(false);
     } else {
       currentCategory = null;
       currentPost = null;
       showView("home");
     }
   }
+
+  // =====================================================
+  // GUEST: 방명록 바둑판
+  // =====================================================
+
+  // Supabase 연결 정보
+  // publishable 키는 사이트에 공개되어도 괜찮도록 만들어진 키입니다.
+  // secret / service_role 키는 절대 여기에 넣지 마세요.
+  const SUPABASE_URL = "https://cvtjfnrsnmpneenfimrm.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_EjZW-2u-OnR7fU3UAuhi3A_hSTbJLHf";
+  const STONES_API = `${SUPABASE_URL}/rest/v1/stones`;
+
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const BOARD_LINES = 19;   // 19줄 바둑판
+  const BOARD_GAP = 20;     // 줄 간격
+  const BOARD_PAD = 20;     // 판 가장자리 여백 (바둑판처럼 바깥에 여유)
+  const BOARD_SIZE = 400;   // viewBox 크기
+  const STONE_RADIUS = 9.4; // 바둑돌 크기 (모두 같음)
+  const STAR_POINTS = [3, 9, 15]; // 화점(검은 점) 위치
+
+  let guestStones = [];               // 판 위의 모든 돌
+  const myStoneIds = new Set();       // 이번 방문에 내가 둔 돌 (저장된 id)
+  let guestColor = "pink";
+  let guestGridDrawn = false;
+  let sentencePool = null;
+  let sentencePoolSize = -1;
+  let lastSentenceText = "";
+  let lastTap = { stone: null, time: 0 };
+
+  function supabaseHeaders(extra = {}) {
+    return {
+      apikey: SUPABASE_KEY,
+      "Content-Type": "application/json",
+      ...extra
+    };
+  }
+
+  // 저장된 돌 불러오기
+  async function loadStones() {
+    $("#guest-count").textContent = "-- STONES";
+
+    try {
+      const response = await fetch(
+        `${STONES_API}?select=id,x,y,color,size,message&order=id.asc`,
+        { headers: supabaseHeaders(), cache: "no-store" }
+      );
+
+      if (!response.ok) throw new Error(`stones ${response.status}`);
+
+      const rows = await response.json();
+
+      // 아직 저장되지 않은 내 돌은 유지
+      const unsaved = guestStones.filter((stone) => stone.mine && !stone.id);
+
+      guestStones = rows.map((row) => ({
+        ...row,
+        mine: myStoneIds.has(row.id)
+      })).concat(unsaved);
+    } catch (error) {
+      console.error(error);
+      toast("방명록을 불러오지 못했어요.");
+    }
+
+    renderStones();
+  }
+
+  // 돌 저장 (돌을 두는 순간 자동 저장)
+  async function saveStone(stone) {
+    try {
+      const response = await fetch(STONES_API, {
+        method: "POST",
+        headers: supabaseHeaders({ Prefer: "return=representation" }),
+        body: JSON.stringify({
+          x: stone.x,
+          y: stone.y,
+          color: stone.color,
+          size: stone.size,
+          message: stone.message
+        })
+      });
+
+      if (!response.ok) throw new Error(`save ${response.status}`);
+
+      const [row] = await response.json();
+
+      if (row && row.id) {
+        stone.id = row.id;
+        myStoneIds.add(row.id);
+      }
+    } catch (error) {
+      console.error(error);
+      toast("저장하지 못했어요. 이 돌은 이번 방문에만 보여요.");
+    }
+  }
+
+  // 바둑판 줄 그리기 (처음 한 번)
+  function drawGuestGrid() {
+    if (guestGridDrawn) return;
+
+    const grid = $("#guest-grid");
+    const end = BOARD_PAD + (BOARD_LINES - 1) * BOARD_GAP;
+
+    for (let i = 0; i < BOARD_LINES; i++) {
+      const pos = BOARD_PAD + i * BOARD_GAP;
+
+      [[BOARD_PAD, pos, end, pos], [pos, BOARD_PAD, pos, end]].forEach(([x1, y1, x2, y2]) => {
+        const line = document.createElementNS(SVG_NS, "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", "#14040A");
+        // 바깥 테두리 줄은 굵게, 안쪽 줄은 가늘게
+        line.setAttribute("stroke-width", i === 0 || i === BOARD_LINES - 1 ? "1.6" : "0.6");
+        grid.appendChild(line);
+      });
+    }
+
+    // 화점 (바둑판의 아홉 개 점)
+    STAR_POINTS.forEach((sx) => {
+      STAR_POINTS.forEach((sy) => {
+        const dot = document.createElementNS(SVG_NS, "circle");
+        dot.setAttribute("cx", BOARD_PAD + sx * BOARD_GAP);
+        dot.setAttribute("cy", BOARD_PAD + sy * BOARD_GAP);
+        dot.setAttribute("r", "2.6");
+        dot.setAttribute("fill", "#14040A");
+        grid.appendChild(dot);
+      });
+    });
+
+    guestGridDrawn = true;
+  }
+
+  // 돌 그리기
+  function renderStones() {
+    const group = $("#guest-stones");
+    group.replaceChildren();
+
+    guestStones.forEach((stone) => {
+      const circle = document.createElementNS(SVG_NS, "circle");
+
+      circle.setAttribute("cx", BOARD_PAD + stone.x * BOARD_GAP);
+      circle.setAttribute("cy", BOARD_PAD + stone.y * BOARD_GAP);
+      circle.setAttribute("r", STONE_RADIUS);
+      circle.setAttribute("fill", stone.color === "pink" ? "#EB4587" : "#3a3a3a");
+      circle.setAttribute("class", stone.mine ? "guest-stone is-new" : "guest-stone");
+
+      circle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        handleStoneTap(stone);
+      });
+
+      group.appendChild(circle);
+    });
+
+    $("#guest-count").textContent =
+      `${String(guestStones.length).padStart(2, "0")} STONES`;
+  }
+
+  // 돌 누르기: 한 번 → 남긴 글 / 두 번(내가 이번에 둔 돌만) → 재생성 문장
+  // (휴대폰에서도 되도록 더블 클릭 대신 두 번 누르기 간격으로 판단)
+  function handleStoneTap(stone) {
+    const now = Date.now();
+    const isDouble = lastTap.stone === stone && now - lastTap.time < 400;
+
+    lastTap = { stone, time: now };
+
+    if (isDouble && stone.mine) {
+      showStoneNote(stone, true);
+    } else {
+      showStoneNote(stone, false);
+    }
+  }
+
+  // 메모(포스트잇) 표시
+  function showStoneNote(stone, regen) {
+    const note = $("#guest-note");
+    const label = $("#guest-note-label");
+    const text = $("#guest-note-text");
+    const source = $("#guest-note-source");
+
+    note.classList.remove("is-black", "is-regen");
+    source.textContent = "";
+    source.classList.remove("is-link");
+    source.onclick = null;
+
+    if (regen) {
+      if (!stone.sentence) stone.sentence = pickSentence();
+
+      note.classList.add("is-regen");
+      label.textContent = "재생성 완료";
+
+      if (stone.sentence) {
+        text.textContent = stone.sentence.text;
+        source.textContent = `「${stone.sentence.title}」 중에서`;
+        source.classList.add("is-link");
+        source.onclick = () => openPost(stone.sentence.postId);
+      } else {
+        text.textContent = "문장을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.";
+      }
+      return;
+    }
+
+    if (stone.color === "black") note.classList.add("is-black");
+
+    label.textContent = "NOTE";
+    text.textContent = stone.message;
+  }
+
+  // text 카테고리 글에서 완성된 문장만 모으기
+  function buildSentencePool() {
+    const textPosts = posts.filter((post) => post.category === "text" && post.body);
+
+    if (sentencePool && sentencePoolSize === textPosts.length) return sentencePool;
+
+    const pool = [];
+
+    textPosts.forEach((post) => {
+      const plain = post.body
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+        .replace(/<br\s*\/?>/gi, "\n");
+
+      plain.split("\n").forEach((raw) => {
+        const line = raw.trim();
+
+        // 빈 줄, 날짜 줄, 제목 줄, 생략 표시 줄은 제외
+        if (!line || /^\d{4}년/.test(line) || line.startsWith("#") || line.startsWith("(…)")) return;
+
+        // 마침표·물음표·느낌표·말줄임표 뒤에 띄어쓰기가 있으면 문장을 나눔
+        line
+          .replace(/([.?!…]+[”’"']?)\s+/g, "$1\n")
+          .split("\n")
+          .forEach((piece) => {
+            const sentence = piece.trim();
+            if (!sentence) return;
+
+            // 끝맺은 문장만 사용 (쉼표나 "~고", "~며", "~지만" 등으로 끊긴 문장은 제외)
+            const complete =
+              /[.?!…][”’"']?$/.test(sentence) ||
+              /(다|요|야|어|지|까|네|아|자|해|녀)$/.test(sentence);
+
+            if (complete) {
+              pool.push({ text: sentence, postId: post.id, title: post.title });
+            }
+          });
+      });
+    });
+
+    sentencePool = pool;
+    sentencePoolSize = textPosts.length;
+    return pool;
+  }
+
+  // 무작위 문장 하나 (바로 전과 같은 문장은 피함)
+  function pickSentence() {
+    const pool = buildSentencePool();
+    if (pool.length === 0) return null;
+
+    let choice = pool[Math.floor(Math.random() * pool.length)];
+
+    for (let i = 0; i < 5 && pool.length > 1 && choice.text === lastSentenceText; i++) {
+      choice = pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    lastSentenceText = choice.text;
+    return choice;
+  }
+
+  // 바둑판 클릭 → 가장 가까운 교차점에 돌 두기
+  function placeStone(event) {
+    const input = $("#guest-message");
+    const error = $("#guest-error");
+    const message = input.value.trim();
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scale = BOARD_SIZE / rect.width;
+    const x = Math.round(((event.clientX - rect.left) * scale - BOARD_PAD) / BOARD_GAP);
+    const y = Math.round(((event.clientY - rect.top) * scale - BOARD_PAD) / BOARD_GAP);
+
+    if (x < 0 || y < 0 || x >= BOARD_LINES || y >= BOARD_LINES) return;
+
+    if (!message) {
+      error.textContent = "먼저 글을 적어 주세요.";
+      input.focus();
+      return;
+    }
+
+    const stone = {
+      x,
+      y,
+      color: guestColor,
+      size: 1,
+      message: message.slice(0, 200),
+      mine: true
+    };
+
+    guestStones.push(stone);
+    input.value = "";
+    renderStones();
+    showStoneNote(stone, false);
+    saveStone(stone);
+  }
+
+  // GUEST 화면 열기
+  function openGuest(save = true) {
+    if (save) {
+      pushState({ view: "home" });
+    }
+
+    currentCategory = null;
+    currentPost = null;
+
+    drawGuestGrid();
+    renderStones();
+    showView("guest");
+    loadStones();
+  }
+
+  // GUEST 화면 버튼·입력 연결
+  $("#guest-button").addEventListener("click", () => openGuest());
+  $("#guest-board").addEventListener("click", placeStone);
+
+  $("#guest-message").addEventListener("input", () => {
+    $("#guest-error").textContent = "";
+  });
+
+  document.querySelectorAll(".guest-dot").forEach((dot) => {
+    const choose = () => {
+      guestColor = dot.dataset.color;
+      document.querySelectorAll(".guest-dot").forEach((other) => {
+        other.classList.toggle("is-on", other === dot);
+      });
+    };
+
+    dot.addEventListener("click", choose);
+    dot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        choose();
+      }
+    });
+  });
 
   // 카테고리 버튼 연결
   document.querySelectorAll("[data-category]").forEach((button) => {
@@ -480,7 +1012,7 @@ function setupPostImageLayout() {
   });
 
   // 뒤로 가기 버튼
-  backButton.addEventListener("click", goBack);
+  backButton.addEventListener("click", requestBack);
 
   // 게시물 순서 섞기
   $("#shuffle-button").addEventListener("click", () => {
@@ -515,21 +1047,21 @@ function setupPostImageLayout() {
   document.addEventListener("keydown", (event) => {
     const activeTag = document.activeElement?.tagName;
 
-    if (
-      event.key === "Escape" ||
-      (
-        event.key === "Backspace" &&
-        !["INPUT", "TEXTAREA"].includes(activeTag)
-      )
-    ) {
+    // 글 입력칸에서 타이핑 중일 때는 뒤로 가기 하지 않음
+    if (["INPUT", "TEXTAREA"].includes(activeTag)) return;
+
+    if (event.key === "Escape" || event.key === "Backspace") {
       if (!backButton.hidden) {
         event.preventDefault();
-        goBack();
+        requestBack();
       }
     }
   });
 
   // 트랙패드 제스처
+  // - 두 손가락 좌우 스와이프: 브라우저 기본 기능(뒤로 가기)이 처리
+  //   (위의 브라우저 기록 연동 덕분에 사이트 안에서 한 단계씩 뒤로 감)
+  // - 맨 위에서 위로 당기기: 아래 코드가 처리
   let wheelX = 0;
   let wheelY = 0;
   let wheelTimer = null;
@@ -538,12 +1070,23 @@ function setupPostImageLayout() {
   window.addEventListener("wheel", (event) => {
     if (backButton.hidden || gestureLock) return;
 
+    // 사진 글의 사진/본문 영역 안에서 위로 스크롤 중이면 뒤로 가기 하지 않음
+    const panel = event.target.closest?.(
+      ".post-image-gallery, .post-split-layout .post-content"
+    );
+
     if (
-      Math.abs(event.deltaX) > Math.abs(event.deltaY) &&
-      Math.abs(event.deltaX) > 18
+      panel &&
+      panel.scrollTop > 0 &&
+      Math.abs(event.deltaY) >= Math.abs(event.deltaX)
     ) {
-      wheelX += event.deltaX;
-    } else if (
+      wheelX = 0;
+      wheelY = 0;
+      return;
+    }
+
+    if (
+      Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
       window.scrollY <= 2 &&
       event.deltaY < -15
     ) {
@@ -563,7 +1106,7 @@ function setupPostImageLayout() {
       ) {
         gestureLock = true;
 
-        goBack();
+        requestBack();
 
         setTimeout(() => {
           gestureLock = false;

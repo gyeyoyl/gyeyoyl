@@ -5,12 +5,12 @@
 
   ---
   title: "작업 제목"
-  category: "journal"
+  category: "text"
   date: "2026-10-15"
   credit: "YCW"
   ---
 
-  category는 journal / magazines / column / poem 중 하나여야 합니다.
+  category는 text / magazines / column / shoot 중 하나여야 합니다.
 */
 const fs = require("fs");
 const path = require("path");
@@ -18,7 +18,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const postsDir = path.join(root, "posts");
 const output = path.join(root, "posts.json");
-const allowed = new Set(["journal", "magazines", "column", "poem"]);
+const allowed = new Set(["text", "magazines", "column", "shoot"]);
 
 function parseFrontMatter(text, filename) {
   const match = text.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)/);
@@ -32,7 +32,7 @@ function parseFrontMatter(text, filename) {
   const body = match ? text.slice(match[0].length) : text;
   const heading = body.match(/^#\s+(.+)$/m);
   const title = meta.title || (heading ? heading[1].trim() : path.basename(filename, ".md").replace(/[-_]/g, " "));
-  const category = allowed.has(meta.category) ? meta.category : "journal";
+  const category = allowed.has(meta.category) ? meta.category : "text";
   const date = meta.date || "";
   const credit = meta.credit || "YCW";
   const slug = path.basename(filename, ".md");

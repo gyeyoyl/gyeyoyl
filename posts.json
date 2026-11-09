@@ -1,128 +1,146 @@
 [
   {
-    "id": "01",
+    "id": "서도호",
     "category": "column",
     "title": "MMCA 서울, 서도호, 2026",
+    "titleImage": "mmca 서울, 서도호, 2026",
     "date": "2026-9-14",
     "file": "posts/서도호.md"
   },
 {
-    "id": "02",
+    "id": "올해의작가상",
     "category": "column",
     "title": "MMCA 서울, 올해의 작가상, 2026",
+    "titleImage": "mmca 서울, 올해의 작가상, 2026",
     "date": "2026-8-26",
     "file": "posts/올해의작가상.md"
   },
   {
-    "id": "03",
+    "id": "송은",
     "category": "column",
     "title": "송은, 송은x언박싱프로젝트:생성적 형상들, 2026",
     "date": "2026-10-12",
     "file": "posts/언박싱.md"
   },
    {
-    "id": "04",
+    "id": "료이씨를재구성",
     "category": "text",
     "title": "료이 씨를 재구성",
     "date": "2026-10-20",
     "file": "posts/료이씨를재구성.md"
   },
    {
-    "id": "05",
+    "id": "리미널",
     "category": "text",
     "title": "리미널",
     "date": "2026-04-18",
     "file": "posts/리미널.md"
   },
     {
-      "id": "06",
+      "id": "불가분적관계",
       "category": "text",
       "title": "불가분적 관계",
       "date": "2025-09-17",
       "file": "posts/불가분적관계.md"
     },
     {
-      "id": "07",
+      "id": "아는미래",
       "category": "text",
       "title": "아는 미래",
       "date": "unknown",
       "file": "posts/아는미래.md"
     },
     {
-      "id": "08",
+      "id": "이방감각",
       "category": "text",
       "title": "이방 감각",
       "date": "2026-07-08",
       "file": "posts/이방감각.md"
     },
     {
-      "id": "09",
+      "id": "재구성",
       "category": "text",
       "title": "재구성",
       "date": "unknown",
       "file": "posts/재구성.md"
     },
     {
-      "id": "10",
+      "id": "쿄코",
       "category": "text",
       "title": "쿄코",
       "date": "2026-10-21",
       "file": "posts/쿄코.md"
     },
     {
-      "id": "11",
+      "id": "포커스",
       "category": "text",
       "title": "포커스",
       "date": "unknown",
       "file": "posts/포커스.md"
     },
     {
-      "id": "12",
+      "id": "EVA01",
       "category": "text",
       "title": "EVA-01",
       "date": "2026-10-11",
       "file": "posts/EVA-01.md"
     },
     {
-      "id": "13",
+      "id": "뉴타입여성서사",
       "category": "column",
       "title": "뉴타입 여성 서사",
       "date": "unknown",
       "file": "posts/뉴타입여성서사.md"
     },
     {
-      "id": "14",
+      "id": "vogue09",
       "category": "magazines",
       "title": "vogue september 2026",
       "date": "unknown",
       "file": "posts/vogue09.md"
     },
     {
-      "id": "15",
+      "id": "vogue10",
       "category": "magazines",
       "title": "vogue october 2026",
       "date": "unknown",
       "file": "posts/vogue10.md"
     },
     {
-      "id": "16",
+      "id": "dazed09",
       "category": "magazines",
       "title": "dazed september 2026",
       "date": "unknown",
       "file": "posts/dazed09.md"
     },
     {
-      "id": "17",
+      "id": "dazed10",
       "category": "magazines",
       "title": "dazed october 2026",
       "date": "unknown",
       "file": "posts/dazed10.md"
     },
     {
-      "id": "18",
+      "id": "elle10",
       "category": "magazines",
       "title": "elle october 2026",
       "date": "unknown",
       "file": "posts/elle10.md"
+    },
+    {
+      "id": "hhb",
+      "category": "shoot",
+      "title": "(half) human being",
+      "titleImage": "hhb",
+      "date": "2026.10.25",
+      "file": "posts/hhb.md"
+    },
+    {
+      "id": "noir",
+      "category": "shoot",
+      "title": "also noir but wit",
+      "titleImage": "noir",
+      "date": "2026.09.18",
+      "file": "posts/noir.md"
     }
-]
+  ]

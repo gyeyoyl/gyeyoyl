@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#14040A">
 
-  <title>EDIT,OR CURATE.</title>
+  <title>눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스 시간은 시간이고 일기는 일기이며 정박된 시간, 그것을 발산, 발산하기 창문이 희어지는 순간을 목도하기 당신이 당신 사랑을 숨기는 이유를 이해하고 싶다 focus journal poem error and</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,9 @@
   <div class="grain" aria-hidden="true"></div>
 
   <header class="topbar">
-    <a class="wordmark" href="./" aria-label="Home">gyeyoyl<span>®</span></a>
+<a class="wordmark" href="./" aria-label="Home">
+  <img src="images/gyeyoyl.png" alt="gyeyoyl">
+</a>
 
     <div class="top-meta">
       <span>Yeom Chaewon</span>
@@ -41,44 +43,63 @@
 
       <div class="hero-top"></div>
 
-      <div class="hero-title-wrap">
-        <h1 class="hero-title">
-          EDIT,<em>OR</em><br>
-          CURATE<span class="pink-dot">.</span>
-        </h1>
-      </div>
+<div class="hero-title-wrap">
+  <h1 class="hero-title hero-poem">
+    <span class="poem-line">눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스</span>
+    <span class="poem-stair">
+      <span>시간은 시간이고 일기는 일기이며 정박된 시간,</span>
+      <span>그것을 발산, 발산하기</span>
+    </span>
+    <span class="poem-stair">
+      <span>창문이 희어지는 순간을 목도하기</span>
+      <span>당신이 당신 사랑을 숨기는 이유를 이해하고 싶다</span>
+    </span>
+    <span class="poem-line poem-indent">focus journal poem error and</span>
+  </h1>
 
-      <div class="intro-row">
-        <p class="intro-copy">
-          눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스 시간은 시간이고 일기는 일기이며 정박된 시간,
-          <br>
-          그것을 발산, 발산하기 창문이 희어지는 순간을 목도하기 당신이 당신 사랑을 숨기는 이유를 이해하고 싶다 focus journal poem error and
-        </p>
-      </div>
+  <!-- GUEST(방명록) 입구 버튼 -->
+  <button id="guest-button" class="guest-button" type="button" aria-label="방명록">방명록</button>
+</div>
 
       <nav class="category-board" aria-label="Portfolio categories">
 
         <button class="category-tile tile-text" data-category="text" type="button">
           <span class="tile-index">01</span>
-          <span class="tile-name">text</span>
+          <span class="tile-name">
+            <span class="tile-word">
+              <img src="images/text.png" alt="text">
+            </span>
+          </span>
           <span class="tile-foot"></span>
         </button>
 
         <button class="category-tile tile-magazines" data-category="magazines" type="button">
           <span class="tile-index">02</span>
-          <span class="tile-name">magazines</span>
+          <span class="tile-name">
+            <span class="tile-word">
+              <img src="images/magazines.png" alt="magazines">
+            </span>
+          </span>
           <span class="tile-foot"></span>
         </button>
 
         <button class="category-tile tile-column" data-category="column" type="button">
           <span class="tile-index">03</span>
-          <span class="tile-name">column</span>
+          <span class="tile-name">
+            <span class="tile-word">
+              <img src="images/column.png" alt="column">
+            </span>
+          </span>
           <span class="tile-foot"></span>
         </button>
 
         <button class="category-tile tile-shoot" data-category="shoot" type="button">
           <span class="tile-index">04</span>
-          <span class="tile-name">shoot</span>
+          <span class="tile-name">
+            <span class="tile-word">
+              <img src="images/shoot.png" alt="shoot">
+            </span>
+          </span>
           <span class="tile-foot"></span>
         </button>
 
@@ -102,7 +123,7 @@
           ARCHIVE / <span id="listing-number">01</span>
         </p>
 
-        <h1 id="listing-title">text<span>.</span></h1>
+<h1 id="listing-title" class="listing-handwriting-title"></h1>
 
         <p id="listing-description" class="listing-description">
           A collection of traces.
@@ -148,6 +169,48 @@
 
     </article>
     <!-- POST END -->
+
+
+    <!-- GUEST (방명록 바둑판) -->
+    <section id="guest-view" class="guest-view" hidden>
+
+      <div class="post-kicker">
+        <span>GUEST</span>
+        <span>and your turn</span>
+        <span id="guest-count">00 STONES</span>
+      </div>
+
+      <div class="guest-layout">
+        <div class="guest-board-wrap">
+          <svg id="guest-board" class="guest-board" viewBox="0 0 400 400" role="img" aria-label="방명록 바둑판">
+            <g id="guest-grid"></g>
+            <g id="guest-stones"></g>
+          </svg>
+        </div>
+
+        <div class="guest-side">
+          <div id="guest-note" class="guest-note">
+            <div id="guest-note-label" class="guest-note-label">NOTE</div>
+            <div id="guest-note-text" class="guest-note-text">돌을 누르면 남겨진 글이 열려요.</div>
+            <div id="guest-note-source" class="guest-note-source"></div>
+          </div>
+
+          <div class="guest-form">
+            <div class="guest-colors">
+              <span class="guest-dot guest-dot-pink is-on" data-color="pink" role="button" tabindex="0" aria-label="pink"></span>
+              <span class="guest-dot guest-dot-black" data-color="black" role="button" tabindex="0" aria-label="black"></span>
+            </div>
+
+            <textarea id="guest-message" class="guest-message" rows="3" maxlength="200" placeholder="기억 재생성소"></textarea>
+            <div id="guest-error" class="guest-error"></div>
+
+            <p class="guest-guide">이곳은 당신이 기억과 감정, 결정을 두고 가는 자리입니다. 돌을 올리면 새로운 문장이 탄생합니다. 그 문장은 당신이 내게 준 것으로부터 시작하고, 다음 수에 영향을 미칩니다. 글을 쓰고 원하는 자리에 돌을 두세요.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+    <!-- GUEST END -->
 
 
     <div id="notice" class="notice" role="status" aria-live="polite"></div>

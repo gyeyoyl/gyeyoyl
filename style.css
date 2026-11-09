@@ -371,3 +371,724 @@ button{cursor:pointer}
   margin-left: 36px;
   margin-right: 36px;
 }
+
+
+/* HOME HERO TITLE — EDITORIAL HANDWRITING */
+
+.hero-title-wrap {
+  padding: 28px 0 32px !important;
+}
+
+.hero-title {
+  font-family: 'Gothic A1', sans-serif !important;
+  font-size: clamp(17px, 2vw, 25px) !important;
+  font-weight: 400 !important;
+  line-height: 1.9 !important;
+  letter-spacing: -0.045em !important;
+  text-transform: none !important;
+  max-width: 900px;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+.hero-title em {
+  font-style: normal;
+  color: inherit;
+}
+
+@media (max-width: 760px) {
+  .hero-title-wrap {
+    padding: 24px 0 26px !important;
+  }
+
+  .hero-title {
+    font-size: 17px !important;
+    line-height: 1.85 !important;
+  }
+}
+
+.handwriting-title {
+  display: block;
+  width: min(100%, 700px);
+  height: auto;
+  object-fit: contain;
+}
+
+/* 손글씨 헤더 로고 */
+.wordmark img {
+  display: block;
+  width: 100px;
+  height: auto;
+}
+
+/* 손글씨 카테고리 오른쪽 정렬 */
+.tile-name {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.tile-name img {
+  display: block;
+  width: 100%;
+  padding-right: 40px;
+  max-width: 200px;
+  height: auto;
+}
+
+/* 카테고리 페이지 손글씨 제목 */
+.listing-handwriting-title img {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 카테고리 내부 제목 손글씨는 검은색으로 */
+.listing-handwriting-title img {
+  filter: brightness(0);
+}
+
+/* 손글씨 게시물 제목 */
+.handwriting-post-title {
+  display: block;
+  width: auto;
+  max-width: min(100%, 800px);
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+/* 제목과 미리보기의 레이아웃 */
+.card-info {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.card-title {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.card-excerpt {
+  display: block;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+/* 게시물 목록 레이아웃 수정 */
+#post-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+#post-list .post-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+#post-list .card-info {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+#post-list .card-title,
+#post-list .card-excerpt {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+#post-list .card-excerpt {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 손글씨 게시물 제목 크기 */
+#post-list .handwriting-post-title {
+display: block;
+width: 420px !important;
+max-width: 100% !important;
+height: auto !important;
+max-height: none !important;
+object-fit: contain;
+object-position: left center;
+}
+
+/* 이전·다음 글 손글씨 제목 */
+.post-nav-title img.handwriting-post-title {
+  display: block;
+  width: auto;
+  max-width: 320px;
+  height: 60px;
+  max-height: none;
+  object-fit: contain;
+  object-position: inherit;
+}
+
+.post-nav-link:last-child img.handwriting-post-title {
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .post-nav-title img.handwriting-post-title {
+    max-width: 180px;
+    height: 42px;
+  }
+}
+
+/* 게시물 목록: 제목과 미리보기 사이 간격 (기존 <br> 대신) */
+#post-list .card-title {
+  margin-bottom: 20px;
+}
+
+/* 사진이 있는 글: 사진·본문 영역을 끝까지 스크롤하면
+   페이지 전체가 내려가서 이전 글 / 다음 글이 보이도록 */
+.post-image-gallery,
+.post-split-layout .post-content {
+  overscroll-behavior: auto;
+}
+
+/* 사진이 있는 글도 다른 글과 같은 좌우 여백 사용
+   - 위쪽 선(카테고리·날짜 줄): 다른 글과 같은 폭
+   - 사진 + 본문 영역: 다른 글의 본문 폭(760px)과 같은 위치 */
+.post-view.has-post-images {
+  max-width: 1100px;
+}
+
+.post-split-layout {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  /* PC: 칸이 좁아진 만큼 사진은 칸 너비에 맞춤 */
+  .post-gallery-item img {
+    width: 100%;
+  }
+
+  /* PC: 사진 맨 윗선과 본문 첫 글자 윗선 맞추기
+     (본문 줄 간격 2.5 때문에 글자 위에 생기는 여백만큼 사진을 내림) */
+  .post-image-gallery {
+    padding-top: 9px;
+  }
+}
+
+/* ===== 글 화면에서는 헤더 가운데 문구(이름·시계) 숨김 ===== */
+body[data-view="post"] .top-meta {
+  visibility: hidden;
+}
+
+/* ===== 홈 문구: 손글씨 이미지 → 고딕 텍스트 (줄 배치는 손글씨와 동일) ===== */
+.hero-poem {
+  max-width: none !important;
+  margin: 0;
+  color: var(--ink);
+}
+
+.hero-poem .poem-line {
+  display: block;
+  white-space: nowrap;
+}
+
+/* 마지막 줄은 살짝 들여쓰기 */
+.hero-poem .poem-indent {
+  padding-left: 1em;
+}
+
+/* 계단 배치: 두 번째 줄이 첫 번째 줄이 끝나는 위치에서 시작 */
+.hero-poem .poem-stair {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  column-gap: .3em;
+}
+
+.hero-poem .poem-stair > span {
+  white-space: nowrap;
+}
+
+.hero-poem .poem-stair > span:last-child {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* 모바일: 화면이 좁아 계단 배치 대신 비율로 들여쓰기 */
+@media (max-width: 760px) {
+  .hero-poem .poem-line,
+  .hero-poem .poem-stair > span {
+    white-space: normal;
+  }
+
+  .hero-poem .poem-stair {
+    display: block;
+  }
+
+  .hero-poem .poem-stair > span {
+    display: block;
+  }
+
+  .hero-poem .poem-stair:nth-of-type(2) > span:last-child {
+    padding-left: 45%;
+  }
+
+  .hero-poem .poem-stair:nth-of-type(3) > span:last-child {
+    padding-left: 30%;
+  }
+}
+
+/* ===== 카테고리 손글씨 색: PNG 모양대로 색을 칠해서 호버 시 색 변경 ===== */
+.tile-word {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 200px;
+}
+
+/* 원래 PNG는 크기만 잡아 주고 화면에서는 숨김 */
+.tile-word img {
+  opacity: 0;
+}
+
+/* PNG 글씨 모양으로 색을 칠한 층
+   (오른쪽 40px은 기존 이미지의 오른쪽 여백과 동일) */
+.tile-word::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 40px;
+  background-color: var(--word-color);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transition: background-color .25s;
+}
+
+/* 기본 색 (PNG 원래 색과 동일) */
+.tile-text      { --word-color: #f5f5f5; }
+.tile-magazines { --word-color: #000000; }
+.tile-column    { --word-color: #000000; }
+.tile-shoot     { --word-color: #e4007f; }
+
+/* 호버 색 */
+.tile-text:hover      { --word-color: var(--pink); }
+.tile-magazines:hover { --word-color: #ffffff; }
+.tile-column:hover    { --word-color: #ffffff; }
+.tile-shoot:hover     { --word-color: #000000; }
+
+/* 글씨 모양 */
+.tile-text .tile-word::after {
+  -webkit-mask-image: url("images/text.png");
+  mask-image: url("images/text.png");
+}
+
+.tile-magazines .tile-word::after {
+  -webkit-mask-image: url("images/magazines.png");
+  mask-image: url("images/magazines.png");
+}
+
+.tile-column .tile-word::after {
+  -webkit-mask-image: url("images/column.png");
+  mask-image: url("images/column.png");
+}
+
+.tile-shoot .tile-word::after {
+  -webkit-mask-image: url("images/shoot.png");
+  mask-image: url("images/shoot.png");
+}
+
+/* text 칸은 호버해도 배경을 검정으로 유지
+   (배경이 분홍이 되면 분홍 글씨가 안 보이므로) */
+.tile-text:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ===== 홈 문구 크기: 기존보다 5px 작게 ===== */
+.hero-title.hero-poem {
+  font-size: clamp(12px, calc(2vw - 5px), 20px) !important;
+  /* 손글씨 이미지가 있던 때와 같은 높이를 차지하게 해서
+     아래 카테고리·하단 문구 위치를 예전과 같게 유지 */
+  min-height: calc(min(100vw - 56px, 700px) * 0.475);
+}
+
+@media (max-width: 760px) {
+  .hero-title.hero-poem {
+    font-size: 12px !important;
+    min-height: calc(min(100vw - 30px, 700px) * 0.475);
+  }
+}
+
+/* ===== GUEST 입구 버튼 (홈, 카테고리 위 오른쪽) ===== */
+.hero-title-wrap {
+  position: relative;
+}
+
+.guest-button {
+  position: absolute;
+  right: 0;
+  bottom: 24px;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ko), "Apple SD Gothic Neo", "Noto Sans CJK KR", sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .25s, color .25s, border-color .25s;
+}
+
+.guest-button:hover {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--ink);
+}
+
+@media (max-width: 760px) {
+  .guest-button {
+    width: 48px;
+    height: 48px;
+    bottom: 16px;
+    font-size: 20px;
+  }
+}
+
+/* ===== GUEST 화면 ===== */
+.guest-view {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 35px 28px 80px;
+  min-height: 80vh;
+}
+
+.guest-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 28px;
+  align-items: start;
+}
+
+/* 바둑판 (아크릴판 느낌) */
+.guest-board {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fafafa;
+  border: 1px solid #c9c9c9;
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+
+.guest-board .guest-stone {
+  cursor: pointer;
+  opacity: .92;
+}
+
+/* 이번에 둔 돌: 반짝반짝 */
+@keyframes guest-twinkle {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.9); }
+}
+
+.guest-board .guest-stone.is-new {
+  animation: guest-twinkle 1.4s ease-in-out infinite;
+}
+
+.guest-side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* 포스트잇 메모 */
+.guest-note {
+  min-height: 150px;
+  padding: 18px;
+  background: var(--pink);
+  color: var(--ink);
+  border: 1px solid transparent;
+  transform: rotate(-1.5deg);
+  font-family: var(--font-ko);
+  font-size: 13px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.guest-note.is-black {
+  background: var(--ink);
+  color: var(--pink);
+}
+
+.guest-note.is-regen {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.guest-note-label {
+  font-family: var(--font-en);
+  font-size: 9px;
+  letter-spacing: .12em;
+  margin-bottom: 8px;
+}
+
+/* 출처: 회색 글자 그대로, 누르면 해당 글로 이동 */
+.guest-note-source {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #777;
+}
+
+.guest-note-source.is-link {
+  cursor: pointer;
+}
+
+.guest-form {
+  border-top: 1px solid var(--ink);
+  padding-top: 12px;
+}
+
+.guest-form-label {
+  font-size: 9px;
+  letter-spacing: .12em;
+  margin-bottom: 12px;
+}
+
+.guest-colors {
+  display: flex;
+  gap: 14px;
+  margin: 0 0 14px 4px;
+}
+
+/* 돌 색 고르기: 완전한 원 */
+.guest-dot {
+  display: block;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.guest-dot-pink  { background: var(--pink); }
+.guest-dot-black { background: var(--ink); }
+
+.guest-dot.is-on {
+  outline: 1.5px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.guest-message {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-ko);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.guest-message:focus {
+  outline: none;
+  border-color: var(--pink);
+}
+
+.guest-error {
+  min-height: 18px;
+  margin-top: 4px;
+  font-family: var(--font-ko);
+  font-size: 11px;
+  color: #c2185b;
+}
+
+.guest-guide {
+  margin: 4px 0 0;
+  font-family: var(--font-ko);
+  font-size: 11px;
+  line-height: 1.9;
+  color: #444;
+  word-break: keep-all;
+}
+
+/* 모바일: 바둑판 위, 메모·수 두기 아래 */
+@media (max-width: 760px) {
+  .guest-view {
+    padding: 22px 15px 60px;
+  }
+
+  .guest-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 20px;
+  }
+}
+
+/* ===== GUEST 2차 수정 ===== */
+
+/* 手 버튼: 더 크고, 살짝 돌아간 손으로 그린 듯한 원 */
+.guest-button {
+  width: 96px;
+  height: 96px;
+  font-size: 40px;
+  border-radius: 52% 48% 50% 47% / 48% 53% 47% 52%;
+  transform: rotate(-14deg);
+  transition: background .25s, color .25s, border-color .25s, transform .35s;
+}
+
+.guest-button:hover {
+  transform: rotate(-4deg);
+}
+
+@media (max-width: 760px) {
+  .guest-button {
+    width: 64px;
+    height: 64px;
+    font-size: 27px;
+  }
+}
+
+/* 바둑판: 모눈 느낌 대신 바둑판처럼 (판 색, 바깥 여백, 굵은 테두리는 script.js에서) */
+.guest-board {
+  background: #f1ece2;
+  border: 0;
+}
+
+.guest-board .guest-stone {
+  opacity: 1;
+}
+
+/* 바둑판과 메모 크기 줄이기 */
+.guest-layout {
+  grid-template-columns: minmax(0, 440px) minmax(0, 340px);
+  gap: 56px;
+}
+
+.guest-note {
+  min-height: 110px;
+  padding: 14px 16px;
+}
+
+/* '수 두기' 위 구분선 없애기 */
+.guest-form {
+  border-top: 0;
+  padding-top: 0;
+}
+
+@media (max-width: 760px) {
+  .guest-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+/* 돌아간 원이 카테고리 오른쪽 끝을 넘지 않도록 */
+.guest-button {
+  right: 10px;
+  bottom: 28px;
+}
+
+@media (max-width: 760px) {
+  .guest-button {
+    right: 7px;
+    bottom: 18px;
+  }
+}
+
+/* ===== 홈 문구 크기: 10px 더 작게 (PC 20px → 10px) ===== */
+.hero-title.hero-poem {
+  font-size: 10px !important;
+}
+
+@media (max-width: 760px) {
+  .hero-title.hero-poem {
+    font-size: 10px !important;
+  }
+}
+
+/* ===== 홈 문구 크기: 1.5배 (10px → 15px) ===== */
+.hero-title.hero-poem {
+  font-size: 15px !important;
+}
+
+@media (max-width: 760px) {
+  .hero-title.hero-poem {
+    font-size: 15px !important;
+  }
+}
+
+/* ===== 홈 문구 행간 1.5배 (1.9 → 2.85) ===== */
+.hero-title.hero-poem {
+  line-height: 2.85 !important;
+}
+
+/* ===== 방명록 버튼: 글자 '방명록' ===== */
+.guest-button {
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .guest-button {
+    font-size: 13px;
+  }
+}
+
+/* ===== 사진만 있는 글 (아카이브): 사진을 가운데에 크게 한 줄로 ===== */
+.post-view.is-photo-only .post-split-layout {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1000px;
+}
+
+.post-view.is-photo-only .post-image-gallery {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
+.post-view.is-photo-only .post-gallery-item {
+  margin: 0 0 40px;
+}
+
+.post-view.is-photo-only .post-gallery-item img {
+  width: 100%;
+}
+
+.post-view.is-photo-only .post-split-layout .post-content {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .post-view.is-photo-only .post-gallery-item {
+    margin-bottom: 16px;
+  }
+}
