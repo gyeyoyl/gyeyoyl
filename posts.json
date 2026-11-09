@@ -142,5 +142,13 @@
       "titleImage": "noir",
       "date": "2026.09.18",
       "file": "posts/noir.md"
+    },
+        {
+      "id": "vogue10",
+      "category": "magazines",
+      "title": "vogue november 2026",
+      "titleImage": "vogue november 2026",
+      "date": "unknown",
+      "file": "posts/vogue11.md"
     }
   ]
