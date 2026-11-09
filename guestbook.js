@@ -170,6 +170,9 @@ const apiHeaders = (extra = {}) => ({ apikey: SUPABASE_KEY, "Content-Type": "app
 const site = () => window.portfolio || {};
 const siteToast = (text) => (site().toast ? site().toast(text) : console.warn(text));
 
+// 돌 개수 표시 (화면에 #count 칸이 있을 때만)
+const setCount = (text) => { const el = $("#count"); if (el) el.textContent = text; };
+
 let stones = [];                     // 판 위의 모든 돌 { x, y, color, message, id, mine }
 const myStoneIds = new Set();        // 이번 방문에 내가 둔 돌
 let lastTap = { stone: null, time: 0 };
@@ -177,7 +180,7 @@ let lastSentenceText = "";
 
 // 저장된 돌 불러오기
 async function loadStones() {
-  $("#count").textContent = "-- STONES";
+  setCount("-- STONES");
   try {
     const res = await fetch(`${STONES_API}?select=id,x,y,color,size,message&order=id.asc`, { headers: apiHeaders(), cache: "no-store" });
     if (!res.ok) throw new Error(`stones ${res.status}`);
@@ -220,7 +223,7 @@ function renderStones() {
     c.addEventListener("click", (e) => { e.stopPropagation(); tapStone(stone); });
     group.appendChild(c);
   });
-  $("#count").textContent = `${String(stones.length).padStart(2, "0")} STONES`;
+  setCount(`${String(stones.length).padStart(2, "0")} STONES`);
 }
 
 // 돌 누르기: 한 번 → 남긴 글 / 두 번(이번에 내가 둔 돌만) → 재생성 문장

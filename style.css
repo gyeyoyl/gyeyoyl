@@ -879,3 +879,283 @@ body[data-view="post"] .top-meta {
     margin-bottom: 16px;
   }
 }
+
+/* ===== 홈 제목 모션: 글이 입체 고리를 따라 시계 방향으로 천천히 회전 (poem-ring.js) ===== */
+/* 원래 문구는 자리(높이)만 유지하고 화면에서는 숨김 — 다시 보이게 하려면 이 규칙을 지우세요 */
+.hero-title.hero-poem {
+  opacity: 0;
+}
+
+.poem-ring {
+  position: absolute;
+  left: 0;                   /* 고리 왼쪽 끝 = 제목 왼쪽 끝 */
+  top: 47%;                  /* 고리 중심 (세로) */
+  width: min(64%, 640px);    /* 고리 지름 (넓은 화면에서도 640px까지만) */
+  height: 0;
+  pointer-events: none;      /* 아래 버튼·카테고리 클릭 방해하지 않음 */
+  z-index: 1;
+}
+
+/* 고리 한 겹 (기본 고리 + 어두운 칸 위에 덧씌우는 고리) */
+.poem-ring-layer {
+  position: absolute;
+  inset: 0;
+  perspective: 2200px;
+  color: var(--ink);
+}
+
+.poem-ring-spin {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  font-family: var(--font-en), var(--font-ko);
+  font-size: 18px;           /* 글자 크기 */
+  font-weight: 700;          /* 글자 두께 */
+  white-space: nowrap;
+  /* 기울기: rotateZ = 고리를 오른쪽 위로 기울임, rotateX = 위에서 내려다보는 각도 */
+  animation: poem-ring-spin 48s linear infinite;   /* 48초에 한 바퀴 (숫자가 클수록 느림) */
+}
+
+.poem-ring-spin span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  letter-spacing: -0.03em;   /* 자간 (음수일수록 좁음) */
+  transform-origin: 0 0;     /* 회전 기준점 = 고리 중심 (뒤쪽에서 단어가 밀리지 않게) */
+}
+
+@keyframes poem-ring-spin {
+  from { transform: rotateZ(-20deg) rotateX(-22deg) rotateY(0deg); }
+  to   { transform: rotateZ(-20deg) rotateX(-22deg) rotateY(-360deg); }
+}
+
+/* 모바일: 고리가 작아서 글자를 작게, 고리는 조금 크게 */
+@media (max-width: 760px) {
+  .poem-ring {
+    left: 2%;
+    width: 90%;
+  }
+
+  .poem-ring-spin {
+    font-size: 13px;
+  }
+}
+
+/* 방명록 버튼은 고리 위에 */
+.guest-button {
+  z-index: 2;
+}
+
+/* 움직임 줄이기 설정을 켠 사람에게는 멈춘 고리로 */
+@media (prefers-reduced-motion: reduce) {
+  .poem-ring-spin {
+    animation: none;
+    transform: rotateZ(-20deg) rotateX(-22deg);
+  }
+}
+
+/* ===== 마우스 커서: 흰 원 + 색 반전 (pisache.kr과 같은 효과, cursor.js) ===== */
+.cursor {
+  display: none;
+}
+
+@media (min-width: 994px) and (hover: hover) {
+  * {
+    cursor: none !important;     /* 기본 화살표 숨김 */
+  }
+
+  .cursor {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000000;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: none;
+    background-color: #fff;
+    mix-blend-mode: difference;  /* 아래 색을 반전시켜 보여 줌 */
+    opacity: 0;
+    transition: transform .5s ease-out;
+  }
+
+  /* 링크·버튼 위: 1.5배로 커짐 */
+  .cursor.cursor-hover {
+    transform: translate(-50%, -50%) scale(1.5);
+    transition: transform .3s ease-out;
+  }
+}
+
+
+/* ===== 방명록 버튼: 검은 원 → 마우스를 올리면 분홍 + 'guestbook' ===== */
+.guest-button {
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--ink);
+  transform: none;
+  font-family: var(--font-en), var(--font-ko);
+  font-size: 11px;
+  letter-spacing: .02em;
+  transition: background .25s;
+}
+
+.guest-button .guest-button-label {
+  opacity: 0;
+  transition: opacity .25s;
+}
+
+.guest-button:hover {
+  background: var(--pink);
+  color: var(--ink);
+  transform: none;
+}
+
+.guest-button:hover .guest-button-label {
+  opacity: 1;
+}
+
+@media (max-width: 760px) {
+  .guest-button {
+    width: 48px;
+    height: 48px;
+    font-size: 9px;
+  }
+}
+
+/* ===== 네모 테두리 버튼 → 테두리 없는 볼드, 마우스를 올리면 분홍 글씨 ===== */
+.back-button {
+  border: 0;
+  padding: 8px 0;
+  font-weight: 700;
+  background: transparent;
+  transition: color .2s;
+}
+
+.back-button:hover {
+  background: transparent;
+  color: var(--pink);
+}
+
+/* ===== 사이트 전체: 화면 위쪽 헤더 줄 숨김 =====
+   글 화면 (카테고리 · 날짜 · 제목), 목록 화면 (ARCHIVE / 01, 00 ITEMS)
+   — 내용은 script.js가 계속 채우지만 화면에는 보이지 않음 */
+.post-kicker,
+.listing-head .eyebrow,
+#listing-count {
+  display: none !important;
+}
+
+/* 목록 화면: SHUFFLE ORDER 줄의 위아래 선 없애고 버튼만 오른쪽에 */
+.listing-controls {
+  border-top: 0;
+  justify-content: flex-end;
+}
+
+/* ===== 사이트 전체 글자 버튼: 밑줄·테두리 없이 볼드, 마우스를 올리면 분홍 ===== */
+.listing-controls button {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: .06em;
+  transition: color .2s;
+}
+
+.listing-controls button:hover {
+  color: var(--pink);
+}
+
+/* ===== 사이트 전체: 구분선 모두 없애기 ===== */
+.topbar,
+.hero-title-wrap,
+.listing-head,
+.listing-controls,
+.post-card,
+.post-kicker,
+.post-end {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.post-navigation,
+.post-nav-link {
+  border: 0 !important;
+}
+
+.category-board,
+.category-tile {
+  border: 0 !important;
+}
+
+/* ===== 번호 · SHUFFLE ORDER 지우기 ===== */
+/* 목록 화면의 글 번호 (01, 02 …) — 번호 자리만큼 비어 있던 칸도 없앰 */
+.card-no {
+  display: none !important;
+}
+
+#post-list .post-card {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* 홈 화면 카테고리 칸의 번호 (01 ~ 04) — 자리는 남겨서 손글씨 위치는 그대로 */
+.tile-index {
+  visibility: hidden !important;
+}
+
+/* 목록 화면의 SHUFFLE ORDER 줄 */
+.listing-controls {
+  display: none !important;
+}
+
+/* ===== UP TO TOP 버튼 (to-top.js) — BACK 버튼과 같은 모양, 같은 세로선 ===== */
+.top-button {
+  position: fixed;
+  right: 28px;                 /* BACK 버튼과 같은 오른쪽 여백 */
+  bottom: 24px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 10px;
+  letter-spacing: .1em;
+  font-weight: 700;
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;        /* 숨어 있을 때는 눌리지 않게 */
+  transition: opacity .3s, color .2s;
+}
+
+.top-button.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.top-button:hover {
+  color: var(--pink);
+}
+
+@media (max-width: 760px) {
+  .top-button {
+    right: 15px;               /* 모바일 BACK 버튼과 같은 오른쪽 여백 */
+    bottom: 16px;
+  }
+}
+
+/* ===== 카테고리 목록: 2열 (글 글 / 글 글) ===== */
+#post-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 56px;
+  align-items: start;
+}
+
+/* 휴대폰처럼 좁은 화면에서는 1열 */
+@media (max-width: 760px) {
+  #post-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

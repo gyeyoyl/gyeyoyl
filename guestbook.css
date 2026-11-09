@@ -20,8 +20,10 @@
 .guest-view .cam.is-off .cam-off { display:block; }
 .guest-view .status { font-size:13px; min-height:20px; }
 .guest-view .status.grip { color:var(--pink); }
-.guest-view button { font:inherit; font-size:11px; letter-spacing:.08em; padding:8px 12px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer; }
-.guest-view button:not(.shutter):not(.swatch):not(.grid-btn):hover { background:var(--ink); color:var(--paper); }
+/* 글자 버튼: 네모 테두리 없이 볼드, 마우스를 올리면 분홍 글씨 */
+.guest-view button { font:inherit; font-size:12px; font-weight:700; letter-spacing:.06em; padding:4px 0; border:0; background:transparent; color:var(--ink); cursor:pointer; transition:color .2s; }
+.guest-view button:not(.shutter):not(.swatch):not(.grid-btn):hover { background:transparent; color:var(--pink); }
+.guest-view button:not(.shutter):not(.swatch):not(.grid-btn):disabled { opacity:.35; cursor:default; color:var(--ink); }
 .guest-view textarea { width:100%; padding:8px; border:1px solid var(--ink); border-radius:0; font-family:inherit; font-size:13px; background:#fff; color:var(--ink); }
 .guest-view textarea:focus { outline:none; border-color:var(--pink); }
 
@@ -86,10 +88,12 @@
 .guest-view .grid-v { width:13px; height:28px; }
 .guest-view .grid-h { width:30px; height:18px; }
 .guest-view .swatch.is-on, .guest-view .grid-btn.is-on { outline:1.5px solid var(--ink); outline-offset:3px; }
-.guest-view .booth-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.guest-view .booth-actions button { width:100%; }
+.guest-view .booth-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; justify-items:start; }
 .guest-view .pens { display:flex; gap:12px; align-items:center; }
 .guest-view .pen { width:26px; height:26px; border-radius:50%; cursor:pointer; display:block; }
 .guest-view .pen.is-on { outline:1.5px solid var(--ink); outline-offset:3px; }
 .guest-view .pen-eraser { border:1px dashed var(--ink); background:transparent; }
 @media (max-width:760px) { .guest-view .booth-body { grid-template-columns:minmax(0,1fr); } }
+
+/* 포토부스 제목 아래 구분선 없애기 */
+.guest-view .booth-head { border-bottom: 0; }

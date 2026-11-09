@@ -17,6 +17,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script defer src="script.js"></script>
+  <script defer src="poem-ring.js"></script>
+  <script defer src="cursor.js"></script>
+  <script defer src="to-top.js"></script>
   <script type="module" src="guestbook.js"></script>
 </head>
 
@@ -27,11 +30,6 @@
 <a class="wordmark" href="./" aria-label="Home">
   <img src="images/gyeyoyl.png" alt="gyeyoyl">
 </a>
-
-    <div class="top-meta">
-      <span>Yeom Chaewon</span>
-      <span id="live-clock">SEOUL · 00:00:00</span>
-    </div>
 
     <button id="back-button" class="back-button" type="button" hidden>
       BACK <span></span>
@@ -59,8 +57,11 @@
     <span class="poem-line poem-indent">focus journal poem error and</span>
   </h1>
 
+  <!-- 홈 제목 모션: 글이 입체 고리를 따라 회전 (poem-ring.js) -->
+  <div class="poem-ring" aria-hidden="true"></div>
+
   <!-- GUEST(방명록) 입구 버튼 -->
-  <button id="guest-button" class="guest-button" type="button" aria-label="방명록">방명록</button>
+  <button id="guest-button" class="guest-button" type="button" aria-label="방명록"><span class="guest-button-label">guestbook</span></button>
 </div>
 
       <nav class="category-board" aria-label="Portfolio categories">
@@ -175,12 +176,6 @@
 
     <!-- GUEST (방명록: 손동작 바둑판 + 포토부스, 기능은 guestbook.js) -->
     <section id="guest-view" class="guest-view" hidden>
-
-      <div class="post-kicker">
-        <span>GUEST</span>
-        <span>착수하기</span>
-        <span id="count">00 STONES</span>
-      </div>
 
       <div class="layout">
         <div class="board-col">
