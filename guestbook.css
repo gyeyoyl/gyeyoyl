@@ -1,0 +1,95 @@
+/* =====================================================
+   방명록 (GUEST) — 손동작 착수 + 포토부스
+   모든 규칙은 .guest-view 안에서만 적용됩니다 (사이트 다른 화면에 영향 없음)
+   ===================================================== */
+
+.guest-view { max-width:1100px; margin:0 auto; padding:35px 28px 80px; min-height:80vh; }
+
+.guest-view .layout { display:grid; grid-template-columns:minmax(0,440px) minmax(0,360px); gap:56px; margin-top:28px; align-items:start; }
+.guest-view svg { display:block; width:100%; height:auto; background:transparent; }
+.guest-view #board { cursor:crosshair; touch-action:manipulation; }
+.guest-view .gb-stone { cursor:pointer; }
+.guest-view .board-col { display:flex; flex-direction:column; gap:28px; font-family:var(--font-ko); font-size:12px; min-width:0; }
+/* 분홍 메모 = 바둑판 선 영역과 같은 너비 (바둑판 바깥 여백 20/400 = 5%씩) */
+.guest-view .board-col .note { margin:0 5%; }
+.guest-view .side { display:flex; flex-direction:column; gap:16px; font-family:var(--font-ko); font-size:12px; }
+.guest-view .cam { position:relative; width:100%; aspect-ratio:4/3; background:#ddd; overflow:hidden; }
+.guest-view .cam video, .guest-view .cam canvas { position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1); object-fit:cover; transition:opacity .3s; }
+.guest-view .cam .cam-off { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:11px; letter-spacing:.1em; color:var(--ink); display:none; }
+.guest-view .cam.is-off video { opacity:.3; }
+.guest-view .cam.is-off .cam-off { display:block; }
+.guest-view .status { font-size:13px; min-height:20px; }
+.guest-view .status.grip { color:var(--pink); }
+.guest-view button { font:inherit; font-size:11px; letter-spacing:.08em; padding:8px 12px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer; }
+.guest-view button:not(.shutter):not(.swatch):not(.grid-btn):hover { background:var(--ink); color:var(--paper); }
+.guest-view textarea { width:100%; padding:8px; border:1px solid var(--ink); border-radius:0; font-family:inherit; font-size:13px; background:#fff; color:var(--ink); }
+.guest-view textarea:focus { outline:none; border-color:var(--pink); }
+
+/* 메모 (돌을 누르면 남긴 글 / 내 돌을 두 번 누르면 재생성 문장) */
+.guest-view .note { padding:14px 16px; background:var(--pink); color:var(--ink); font-size:13px; line-height:1.8; min-height:70px; word-break:keep-all; overflow-wrap:anywhere; border:1px solid transparent; }
+.guest-view .note.is-black { background:var(--ink); color:var(--pink); }
+.guest-view .note.is-regen { background:var(--paper); color:var(--ink); border-color:var(--ink); }
+.guest-view .note-label { font-family:var(--font-en); font-size:9px; letter-spacing:.12em; margin-bottom:6px; }
+.guest-view .note-source { margin-top:8px; font-size:11px; color:#777; }
+.guest-view .note-source.is-link { cursor:pointer; }
+
+.guest-view .guide { font-size:11px; line-height:1.9; color:#444; margin:0; word-break:keep-all; }
+.guest-view .debug { font-family:monospace; font-size:10px; color:#777; white-space:pre-line; }
+@keyframes gb-twinkle { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.9); } }
+.guest-view .is-new { animation:gb-twinkle 1.4s ease-in-out infinite; }
+@media (max-width:760px) {
+  .guest-view { padding:22px 15px 60px; }
+  .guest-view .layout { grid-template-columns:minmax(0,1fr); gap:24px; margin-top:20px; }
+}
+
+/* ===== 포토부스 팝업 ===== */
+.guest-view .booth-open-btn { align-self:flex-start; }
+.guest-view .booth { position:fixed; inset:0; z-index:50; background:rgba(20,4,10,.72); display:flex; align-items:center; justify-content:center; padding:24px; }
+.guest-view .booth[hidden] { display:none; }
+.guest-view .booth-panel { background:var(--paper); width:min(980px,100%); max-height:100%; overflow:auto; padding:20px 24px 24px; }
+.guest-view .booth-head { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--ink); padding-bottom:10px; font-size:10px; letter-spacing:.12em; }
+.guest-view .booth-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,300px); gap:28px; margin-top:20px; align-items:start; }
+.guest-view .booth-stage { display:flex; justify-content:center; min-width:0; }
+/* 크기(가로·세로)는 카메라 원본 비율에 맞춰 스크립트가 정함 */
+.guest-view .booth-live { position:relative; width:100%; aspect-ratio:16/9; background:#17110d; overflow:hidden; }
+.guest-view .booth-live video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+.guest-view .booth-count { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:96px; color:#f5f5f5; font-family:"Helvetica Neue",Arial,sans-serif; pointer-events:none; }
+.guest-view .booth-shot { position:absolute; left:12px; top:10px; font-size:11px; letter-spacing:.1em; color:#f5f5f5; }
+.guest-view .booth-flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .35s; }
+.guest-view .booth-flash.on { opacity:1; transition:none; }
+.guest-view .booth-result { position:relative; }
+.guest-view .booth-result canvas { position:absolute; inset:0; width:100%; height:100%; }
+.guest-view .booth-result[hidden], .guest-view .booth-live[hidden] { display:none; }
+.guest-view #booth-cursor { cursor:crosshair; touch-action:none; }
+.guest-view .booth-side { display:flex; flex-direction:column; gap:22px; font-family:var(--font-ko); font-size:12px; align-self:stretch; }
+.guest-view .booth-status { font-size:13px; line-height:1.7; }
+/* 촬영 전: 안내 문구 + 셔터를 오른쪽 열 한가운데에 */
+.guest-view .booth.is-live .booth-side { justify-content:center; align-items:center; text-align:center; }
+/* 아이폰 카메라 셔터 모양 버튼 */
+.guest-view .shutter { width:68px; height:68px; padding:0; border-radius:50%; border:3px solid var(--ink); background:var(--ink); box-shadow:inset 0 0 0 4px var(--paper); cursor:pointer; transition:transform .12s, opacity .2s; }
+.guest-view .shutter:hover { background:var(--pink); }
+.guest-view .shutter:active { transform:scale(.92); }
+.guest-view .shutter:disabled { opacity:.3; cursor:default; transform:none; background:var(--ink); }
+.guest-view .shutter[hidden] { display:none; }
+.guest-view .booth-tools { display:flex; flex-direction:column; gap:22px; }
+.guest-view .booth-tools[hidden] { display:none; }
+.guest-view .tool-row { display:flex; align-items:center; gap:12px; }
+.guest-view .tool-sep { width:1px; height:22px; background:#bbb; margin:0 4px; }
+/* 필터 동그라미 (원본·흑백·세피아) */
+.guest-view .swatch { width:26px; height:26px; padding:0; border-radius:50%; border:1px solid #bbb; cursor:pointer; }
+.guest-view .swatch-color { background:radial-gradient(circle at 32% 30%, #ffffff 0%, #f1f1f1 45%, #cfcfcf 100%); }
+.guest-view .swatch-bw    { background:radial-gradient(circle at 32% 30%, #8a8a8a 0%, #3a3a3a 50%, #0d0d0d 100%); border-color:#0d0d0d; }
+.guest-view .swatch-sepia { background:radial-gradient(circle at 32% 30%, #e0bf96 0%, #9a6a3f 50%, #4f3018 100%); border-color:#4f3018; }
+/* 그리드 직사각형 (세로 = 1×4, 가로 = 2×2) */
+.guest-view .grid-btn { padding:0; border:1.5px solid var(--ink); background:transparent; cursor:pointer; }
+.guest-view .grid-btn:hover { background:#ddd; }
+.guest-view .grid-v { width:13px; height:28px; }
+.guest-view .grid-h { width:30px; height:18px; }
+.guest-view .swatch.is-on, .guest-view .grid-btn.is-on { outline:1.5px solid var(--ink); outline-offset:3px; }
+.guest-view .booth-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.guest-view .booth-actions button { width:100%; }
+.guest-view .pens { display:flex; gap:12px; align-items:center; }
+.guest-view .pen { width:26px; height:26px; border-radius:50%; cursor:pointer; display:block; }
+.guest-view .pen.is-on { outline:1.5px solid var(--ink); outline-offset:3px; }
+.guest-view .pen-eraser { border:1px dashed var(--ink); background:transparent; }
+@media (max-width:760px) { .guest-view .booth-body { grid-template-columns:minmax(0,1fr); } }

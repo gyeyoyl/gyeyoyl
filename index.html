@@ -13,9 +13,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="guestbook.css">
 
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script defer src="script.js"></script>
+  <script type="module" src="guestbook.js"></script>
 </head>
 
 <body>
@@ -171,43 +173,100 @@
     <!-- POST END -->
 
 
-    <!-- GUEST (방명록 바둑판) -->
+    <!-- GUEST (방명록: 손동작 바둑판 + 포토부스, 기능은 guestbook.js) -->
     <section id="guest-view" class="guest-view" hidden>
 
       <div class="post-kicker">
         <span>GUEST</span>
-        <span>and your turn</span>
-        <span id="guest-count">00 STONES</span>
+        <span>착수하기</span>
+        <span id="count">00 STONES</span>
       </div>
 
-      <div class="guest-layout">
-        <div class="guest-board-wrap">
-          <svg id="guest-board" class="guest-board" viewBox="0 0 400 400" role="img" aria-label="방명록 바둑판">
-            <g id="guest-grid"></g>
-            <g id="guest-stones"></g>
-          </svg>
+      <div class="layout">
+        <div class="board-col">
+        <svg id="board" viewBox="0 0 400 400" aria-label="바둑판">
+          <g id="grid"></g>
+          <g id="stones"></g>
+          <g id="cursor" style="display:none">
+            <circle id="cursor-ring" r="11" fill="none" stroke="#14040A" stroke-width="1.5"></circle>
+            <circle id="cursor-fill" r="9.4" fill="#EB4587" opacity="0"></circle>
+          </g>
+        </svg>
+
+        <!-- 방명록 내용 / 가이드 (바둑판 아래) -->
+          <div id="note" class="note">➊ 재생성할 기억 입력하기 <br> ➋ 카메라를 켜고 원하는 위치에 돌 놓기 <br> ➌ 흔적 남기기</div>
         </div>
 
-        <div class="guest-side">
-          <div id="guest-note" class="guest-note">
-            <div id="guest-note-label" class="guest-note-label">NOTE</div>
-            <div id="guest-note-text" class="guest-note-text">돌을 누르면 남겨진 글이 열려요.</div>
-            <div id="guest-note-source" class="guest-note-source"></div>
+        <div class="side">
+          <div class="cam">
+            <video id="video" playsinline muted></video>
+            <canvas id="overlay"></canvas>
+            <div class="cam-off">재생성할 기억을 입력해 주세요</div>
           </div>
 
-          <div class="guest-form">
-            <div class="guest-colors">
-              <span class="guest-dot guest-dot-pink is-on" data-color="pink" role="button" tabindex="0" aria-label="pink"></span>
-              <span class="guest-dot guest-dot-black" data-color="black" role="button" tabindex="0" aria-label="black"></span>
+          <div id="status" class="status">카메라 켜서 시작하기</div>
+          <div id="debug" class="debug"></div>
+          <div><button id="start" type="button">camera</button></div>
+
+          <textarea id="message" rows="2" maxlength="200" placeholder="기억 재생성소"></textarea>
+          <button id="booth-open" class="booth-open-btn" type="button" hidden>photobooth</button>
+
+          <p class="guide">
+            ➊ 검지·중지를 나란히 붙여 펴고 나머지는 접는다. (착수 동작)<br>
+            ➋ 손을 움직여 원하는 위치에 기억을 가져간다. 착수 준비가 완료되면, 분홍색으로 바뀐다.<br>
+            ➌ 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 내려보기. 원하는 위치에 흔적을 남겼다면, 오늘을 사진으로 기록하기. <br>
+            ➍ 영상과 사진은 모두 브라우저에서만 처리되며, 서버에 저장되지 않습니다. 오로지 돌이라는 형태로 재생성된 기억만 남습니다.
+          </p>
+
+        </div>
+      </div>
+
+    <!-- 포토부스 팝업 -->
+    <div id="booth" class="booth" hidden role="dialog" aria-label="포토부스">
+      <div class="booth-panel">
+        <div class="booth-head"><span>photobooth</span><button id="booth-close" type="button">x</button></div>
+        <div class="booth-body">
+          <div class="booth-stage">
+            <div id="booth-live" class="booth-live">
+              <video id="booth-video" playsinline muted></video>
+              <div id="booth-shot" class="booth-shot"></div>
+              <div id="booth-count" class="booth-count"></div>
+              <div id="booth-flash" class="booth-flash"></div>
             </div>
-
-            <textarea id="guest-message" class="guest-message" rows="3" maxlength="200" placeholder="기억 재생성소"></textarea>
-            <div id="guest-error" class="guest-error"></div>
-
-            <p class="guest-guide">이곳은 당신이 기억과 감정, 결정을 두고 가는 자리입니다. 돌을 올리면 새로운 문장이 탄생합니다. 그 문장은 당신이 내게 준 것으로부터 시작하고, 다음 수에 영향을 미칩니다. 글을 쓰고 원하는 자리에 돌을 두세요.</p>
+            <div id="booth-result" class="booth-result" hidden>
+              <canvas id="booth-photo"></canvas>
+              <canvas id="booth-ink"></canvas>
+              <canvas id="booth-cursor"></canvas>
+            </div>
+          </div>
+          <div class="booth-side">
+            <div id="booth-status" class="booth-status">준비되면 셔터를 눌러 기록을 시작합니다.</div>
+            <button id="booth-shoot" class="shutter" type="button" aria-label="촬영"></button>
+            <div id="booth-tools" class="booth-tools" hidden>
+              <div class="tool-row">
+                <button class="swatch swatch-color is-on" data-filter="color" type="button" aria-label="원본"></button>
+                <button class="swatch swatch-bw" data-filter="bw" type="button" aria-label="흑백"></button>
+                <button class="swatch swatch-sepia" data-filter="sepia" type="button" aria-label="세피아"></button>
+                <span class="tool-sep"></span>
+                <button class="grid-btn grid-v" data-grid="v" type="button" aria-label="세로 그리드"></button>
+                <button class="grid-btn grid-h is-on" data-grid="h" type="button" aria-label="가로 그리드"></button>
+              </div>
+              <div class="pens">
+                <span class="pen is-on" data-pen="#14040A" role="button" tabindex="0" aria-label="검정 펜" style="background:#14040A"></span>
+                <span class="pen" data-pen="#EB4587" role="button" tabindex="0" aria-label="분홍 펜" style="background:#EB4587"></span>
+                <span class="pen pen-eraser" data-pen="eraser" role="button" tabindex="0" aria-label="지우개"></span>
+              </div>
+              <div class="booth-actions">
+                <button id="booth-share" type="button">airdrop</button>
+                <button id="booth-save" type="button">save photo</button>
+                <button id="booth-clear" type="button">erase all</button>
+                <button id="booth-retake" type="button">retake</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
     </section>
     <!-- GUEST END -->

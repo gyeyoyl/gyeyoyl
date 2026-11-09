@@ -159,6 +159,9 @@ function excerpt(markdown = "") {
       top: 0,
       behavior: "instant"
     });
+
+    // 방명록(guestbook.js)에 화면이 바뀌었다고 알림 → 방명록을 떠나면 카메라 끄기
+    document.dispatchEvent(new CustomEvent("portfolio:view", { detail: view }));
   }
 
   // 뒤로 가기 기록
@@ -663,306 +666,16 @@ function setupPostImageLayout() {
   }
 
   // =====================================================
-  // GUEST: 방명록 바둑판
+  // GUEST: 방명록 (손동작 바둑판 + 포토부스)
+  // 방명록의 실제 기능은 guestbook.js에 있습니다.
   // =====================================================
 
-  // Supabase 연결 정보
-  // publishable 키는 사이트에 공개되어도 괜찮도록 만들어진 키입니다.
-  // secret / service_role 키는 절대 여기에 넣지 마세요.
-  const SUPABASE_URL = "https://cvtjfnrsnmpneenfimrm.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_EjZW-2u-OnR7fU3UAuhi3A_hSTbJLHf";
-  const STONES_API = `${SUPABASE_URL}/rest/v1/stones`;
-
-  const SVG_NS = "http://www.w3.org/2000/svg";
-  const BOARD_LINES = 19;   // 19줄 바둑판
-  const BOARD_GAP = 20;     // 줄 간격
-  const BOARD_PAD = 20;     // 판 가장자리 여백 (바둑판처럼 바깥에 여유)
-  const BOARD_SIZE = 400;   // viewBox 크기
-  const STONE_RADIUS = 9.4; // 바둑돌 크기 (모두 같음)
-  const STAR_POINTS = [3, 9, 15]; // 화점(검은 점) 위치
-
-  let guestStones = [];               // 판 위의 모든 돌
-  const myStoneIds = new Set();       // 이번 방문에 내가 둔 돌 (저장된 id)
-  let guestColor = "pink";
-  let guestGridDrawn = false;
-  let sentencePool = null;
-  let sentencePoolSize = -1;
-  let lastSentenceText = "";
-  let lastTap = { stone: null, time: 0 };
-
-  function supabaseHeaders(extra = {}) {
-    return {
-      apikey: SUPABASE_KEY,
-      "Content-Type": "application/json",
-      ...extra
-    };
-  }
-
-  // 저장된 돌 불러오기
-  async function loadStones() {
-    $("#guest-count").textContent = "-- STONES";
-
-    try {
-      const response = await fetch(
-        `${STONES_API}?select=id,x,y,color,size,message&order=id.asc`,
-        { headers: supabaseHeaders(), cache: "no-store" }
-      );
-
-      if (!response.ok) throw new Error(`stones ${response.status}`);
-
-      const rows = await response.json();
-
-      // 아직 저장되지 않은 내 돌은 유지
-      const unsaved = guestStones.filter((stone) => stone.mine && !stone.id);
-
-      guestStones = rows.map((row) => ({
-        ...row,
-        mine: myStoneIds.has(row.id)
-      })).concat(unsaved);
-    } catch (error) {
-      console.error(error);
-      toast("방명록을 불러오지 못했어요.");
-    }
-
-    renderStones();
-  }
-
-  // 돌 저장 (돌을 두는 순간 자동 저장)
-  async function saveStone(stone) {
-    try {
-      const response = await fetch(STONES_API, {
-        method: "POST",
-        headers: supabaseHeaders({ Prefer: "return=representation" }),
-        body: JSON.stringify({
-          x: stone.x,
-          y: stone.y,
-          color: stone.color,
-          size: stone.size,
-          message: stone.message
-        })
-      });
-
-      if (!response.ok) throw new Error(`save ${response.status}`);
-
-      const [row] = await response.json();
-
-      if (row && row.id) {
-        stone.id = row.id;
-        myStoneIds.add(row.id);
-      }
-    } catch (error) {
-      console.error(error);
-      toast("저장하지 못했어요. 이 돌은 이번 방문에만 보여요.");
-    }
-  }
-
-  // 바둑판 줄 그리기 (처음 한 번)
-  function drawGuestGrid() {
-    if (guestGridDrawn) return;
-
-    const grid = $("#guest-grid");
-    const end = BOARD_PAD + (BOARD_LINES - 1) * BOARD_GAP;
-
-    for (let i = 0; i < BOARD_LINES; i++) {
-      const pos = BOARD_PAD + i * BOARD_GAP;
-
-      [[BOARD_PAD, pos, end, pos], [pos, BOARD_PAD, pos, end]].forEach(([x1, y1, x2, y2]) => {
-        const line = document.createElementNS(SVG_NS, "line");
-        line.setAttribute("x1", x1);
-        line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2);
-        line.setAttribute("y2", y2);
-        line.setAttribute("stroke", "#14040A");
-        // 바깥 테두리 줄은 굵게, 안쪽 줄은 가늘게
-        line.setAttribute("stroke-width", i === 0 || i === BOARD_LINES - 1 ? "1.6" : "0.6");
-        grid.appendChild(line);
-      });
-    }
-
-    // 화점 (바둑판의 아홉 개 점)
-    STAR_POINTS.forEach((sx) => {
-      STAR_POINTS.forEach((sy) => {
-        const dot = document.createElementNS(SVG_NS, "circle");
-        dot.setAttribute("cx", BOARD_PAD + sx * BOARD_GAP);
-        dot.setAttribute("cy", BOARD_PAD + sy * BOARD_GAP);
-        dot.setAttribute("r", "2.6");
-        dot.setAttribute("fill", "#14040A");
-        grid.appendChild(dot);
-      });
-    });
-
-    guestGridDrawn = true;
-  }
-
-  // 돌 그리기
-  function renderStones() {
-    const group = $("#guest-stones");
-    group.replaceChildren();
-
-    guestStones.forEach((stone) => {
-      const circle = document.createElementNS(SVG_NS, "circle");
-
-      circle.setAttribute("cx", BOARD_PAD + stone.x * BOARD_GAP);
-      circle.setAttribute("cy", BOARD_PAD + stone.y * BOARD_GAP);
-      circle.setAttribute("r", STONE_RADIUS);
-      circle.setAttribute("fill", stone.color === "pink" ? "#EB4587" : "#3a3a3a");
-      circle.setAttribute("class", stone.mine ? "guest-stone is-new" : "guest-stone");
-
-      circle.addEventListener("click", (event) => {
-        event.stopPropagation();
-        handleStoneTap(stone);
-      });
-
-      group.appendChild(circle);
-    });
-
-    $("#guest-count").textContent =
-      `${String(guestStones.length).padStart(2, "0")} STONES`;
-  }
-
-  // 돌 누르기: 한 번 → 남긴 글 / 두 번(내가 이번에 둔 돌만) → 재생성 문장
-  // (휴대폰에서도 되도록 더블 클릭 대신 두 번 누르기 간격으로 판단)
-  function handleStoneTap(stone) {
-    const now = Date.now();
-    const isDouble = lastTap.stone === stone && now - lastTap.time < 400;
-
-    lastTap = { stone, time: now };
-
-    if (isDouble && stone.mine) {
-      showStoneNote(stone, true);
-    } else {
-      showStoneNote(stone, false);
-    }
-  }
-
-  // 메모(포스트잇) 표시
-  function showStoneNote(stone, regen) {
-    const note = $("#guest-note");
-    const label = $("#guest-note-label");
-    const text = $("#guest-note-text");
-    const source = $("#guest-note-source");
-
-    note.classList.remove("is-black", "is-regen");
-    source.textContent = "";
-    source.classList.remove("is-link");
-    source.onclick = null;
-
-    if (regen) {
-      if (!stone.sentence) stone.sentence = pickSentence();
-
-      note.classList.add("is-regen");
-      label.textContent = "재생성 완료";
-
-      if (stone.sentence) {
-        text.textContent = stone.sentence.text;
-        source.textContent = `「${stone.sentence.title}」 중에서`;
-        source.classList.add("is-link");
-        source.onclick = () => openPost(stone.sentence.postId);
-      } else {
-        text.textContent = "문장을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.";
-      }
-      return;
-    }
-
-    if (stone.color === "black") note.classList.add("is-black");
-
-    label.textContent = "NOTE";
-    text.textContent = stone.message;
-  }
-
-  // text 카테고리 글에서 완성된 문장만 모으기
-  function buildSentencePool() {
-    const textPosts = posts.filter((post) => post.category === "text" && post.body);
-
-    if (sentencePool && sentencePoolSize === textPosts.length) return sentencePool;
-
-    const pool = [];
-
-    textPosts.forEach((post) => {
-      const plain = post.body
-        .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-        .replace(/<br\s*\/?>/gi, "\n");
-
-      plain.split("\n").forEach((raw) => {
-        const line = raw.trim();
-
-        // 빈 줄, 날짜 줄, 제목 줄, 생략 표시 줄은 제외
-        if (!line || /^\d{4}년/.test(line) || line.startsWith("#") || line.startsWith("(…)")) return;
-
-        // 마침표·물음표·느낌표·말줄임표 뒤에 띄어쓰기가 있으면 문장을 나눔
-        line
-          .replace(/([.?!…]+[”’"']?)\s+/g, "$1\n")
-          .split("\n")
-          .forEach((piece) => {
-            const sentence = piece.trim();
-            if (!sentence) return;
-
-            // 끝맺은 문장만 사용 (쉼표나 "~고", "~며", "~지만" 등으로 끊긴 문장은 제외)
-            const complete =
-              /[.?!…][”’"']?$/.test(sentence) ||
-              /(다|요|야|어|지|까|네|아|자|해|녀)$/.test(sentence);
-
-            if (complete) {
-              pool.push({ text: sentence, postId: post.id, title: post.title });
-            }
-          });
-      });
-    });
-
-    sentencePool = pool;
-    sentencePoolSize = textPosts.length;
-    return pool;
-  }
-
-  // 무작위 문장 하나 (바로 전과 같은 문장은 피함)
-  function pickSentence() {
-    const pool = buildSentencePool();
-    if (pool.length === 0) return null;
-
-    let choice = pool[Math.floor(Math.random() * pool.length)];
-
-    for (let i = 0; i < 5 && pool.length > 1 && choice.text === lastSentenceText; i++) {
-      choice = pool[Math.floor(Math.random() * pool.length)];
-    }
-
-    lastSentenceText = choice.text;
-    return choice;
-  }
-
-  // 바둑판 클릭 → 가장 가까운 교차점에 돌 두기
-  function placeStone(event) {
-    const input = $("#guest-message");
-    const error = $("#guest-error");
-    const message = input.value.trim();
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const scale = BOARD_SIZE / rect.width;
-    const x = Math.round(((event.clientX - rect.left) * scale - BOARD_PAD) / BOARD_GAP);
-    const y = Math.round(((event.clientY - rect.top) * scale - BOARD_PAD) / BOARD_GAP);
-
-    if (x < 0 || y < 0 || x >= BOARD_LINES || y >= BOARD_LINES) return;
-
-    if (!message) {
-      error.textContent = "먼저 글을 적어 주세요.";
-      input.focus();
-      return;
-    }
-
-    const stone = {
-      x,
-      y,
-      color: guestColor,
-      size: 1,
-      message: message.slice(0, 200),
-      mine: true
-    };
-
-    guestStones.push(stone);
-    input.value = "";
-    renderStones();
-    showStoneNote(stone, false);
-    saveStone(stone);
-  }
+  // guestbook.js가 쓸 수 있도록 글 목록 · 글 열기 · 알림을 내보냄
+  window.portfolio = {
+    getPosts: () => posts,
+    openPost: (id) => openPost(id),
+    toast: (message) => toast(message)
+  };
 
   // GUEST 화면 열기
   function openGuest(save = true) {
@@ -973,36 +686,10 @@ function setupPostImageLayout() {
     currentCategory = null;
     currentPost = null;
 
-    drawGuestGrid();
-    renderStones();
     showView("guest");
-    loadStones();
   }
 
-  // GUEST 화면 버튼·입력 연결
   $("#guest-button").addEventListener("click", () => openGuest());
-  $("#guest-board").addEventListener("click", placeStone);
-
-  $("#guest-message").addEventListener("input", () => {
-    $("#guest-error").textContent = "";
-  });
-
-  document.querySelectorAll(".guest-dot").forEach((dot) => {
-    const choose = () => {
-      guestColor = dot.dataset.color;
-      document.querySelectorAll(".guest-dot").forEach((other) => {
-        other.classList.toggle("is-on", other === dot);
-      });
-    };
-
-    dot.addEventListener("click", choose);
-    dot.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        choose();
-      }
-    });
-  });
 
   // 카테고리 버튼 연결
   document.querySelectorAll("[data-category]").forEach((button) => {
