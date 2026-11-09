@@ -1,0 +1,20 @@
+# 방명록 데이터베이스(Supabase)가 잠들지 않게 깨우는 자동 작업
+# - Supabase 무료 플랜은 7일 동안 안 쓰면 프로젝트를 일시정지함
+# - GitHub가 매주 월·목요일(한국 시간 낮 12시 17분)에 방명록 돌을 1개 읽어서 "사용 중"으로 만듦
+# - 공개용(publishable) 키만 사용. secret / service_role 키는 절대 넣지 마세요.
+name: Supabase 깨우기
+
+on:
+  schedule:
+    - cron: "17 3 * * 1,4"   # UTC 기준 03:17 = 한국 12:17, 월(1)·목(4)
+  workflow_dispatch:          # GitHub 사이트에서 직접 눌러 실행할 수도 있음
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 방명록 돌 1개 읽기
+        run: |
+          curl -sS --fail -o /dev/null -w "응답 코드: %{http_code}\n" \
+            "https://cvtjfnrsnmpneenfimrm.supabase.co/rest/v1/stones?select=id&limit=1" \
+            -H "apikey: sb_publishable_EjZW-2u-OnR7fU3UAuhi3A_hSTbJLHf"
