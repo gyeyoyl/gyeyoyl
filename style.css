@@ -1159,3 +1159,79 @@ body[data-view="post"] .top-meta {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ===== 방명록 버튼: 또잉또잉 (말랑하게 튀는 크기 변화) ===== */
+@keyframes boing {
+  0%, 52%, 100% { transform: scale(1, 1); }
+  58% { transform: scale(1.22, 0.84); }
+  65% { transform: scale(0.88, 1.14); }
+  72% { transform: scale(1.1, 0.93); }
+  80% { transform: scale(0.96, 1.04); }
+  88% { transform: scale(1.03, 0.98); }
+  94% { transform: scale(1, 1); }
+}
+
+.guest-button {
+  animation: boing 1.9s ease-in-out infinite;
+}
+
+/* 마우스를 올리면 멈추고 분홍 + guestbook 글씨 */
+.guest-button:hover {
+  animation: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guest-button { animation: none; }
+}
+
+/* ===== 글 폰트 =====
+   본문: 영문 Inter Light + 한글 Gothic A1 Light (섞어짜기 — 알파벳은 Inter, 한글은 Gothic A1)
+   글 안 제목 (#, ##, ### 줄): 원래 쓰던 폰트 그대로, 크기만 줄임 */
+.post-content {
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-weight: 300;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3 {
+  line-height: 1.2;
+  margin: 2.2em 0 .9em;
+}
+
+.post-content h1 { font-size: 30px; }   /* # 제목 (원래 최대 88px) */
+.post-content h2 { font-size: 24px; }   /* ## 제목 (원래 최대 48px) */
+.post-content h3 { font-size: 18px; }   /* ### 제목 (원래 22px) */
+
+/* **굵게**: 본문 폰트의 굵은 글씨 */
+.post-content strong {
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .post-content h1 { font-size: 24px; }
+  .post-content h2 { font-size: 20px; }
+  .post-content h3 { font-size: 16px; }
+}
+
+/* ===== 글 본문: 행간 1.5배, 본문 시작점 올리기 ===== */
+.post-content {
+  line-height: 2;           /* 행간 (원래 2.5) */
+  padding-top: 12px;           /* 본문 시작 위 여백 (원래 60px) */
+}
+
+/* 사진 글 오른쪽 본문 칸도 같은 행간 */
+.post-split-layout .post-content {
+  padding-top: 0;
+}
+
+/* ===== *** (볼드+이탤릭) 풀기 → 일반 본문 글씨로 ===== */
+.post-content em strong,
+.post-content strong em {
+  font-style: normal;
+  font-weight: inherit;
+}
+.post-content em:has(> strong:only-child) {
+  font-style: normal;
+}

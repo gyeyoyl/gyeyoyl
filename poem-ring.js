@@ -69,13 +69,20 @@
     spin.style.fontSize = "";
     const fontSize = parseFloat(getComputedStyle(spin).fontSize);
     const words = TEXT.split(" ");
+    // 돌고 있는 고리 밖(회전 영향 없는 곳)에서 같은 글꼴로 폭을 잼
+    // (고리 안에서 재면 비스듬히 돌아간 순간 폭이 좁게 재져서 단어가 겹침)
+    const spinStyle = getComputedStyle(spin);
+    const letterSpacing = getComputedStyle(spin.querySelector("span") || spin).letterSpacing;
     const probe = document.createElement("div");
-    probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;";
-    spin.appendChild(probe);
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText =
+      "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;pointer-events:none;" +
+      `font-family:${spinStyle.fontFamily};font-size:${spinStyle.fontSize};font-weight:${spinStyle.fontWeight};` +
+      `letter-spacing:${letterSpacing === "normal" ? "-0.03em" : letterSpacing};`;
+    document.body.appendChild(probe);
     const measureText = (text) => {
       const span = document.createElement("span");
       span.textContent = text;
-      span.style.position = "static";
       probe.appendChild(span);
       return span.getBoundingClientRect().width;
     };
@@ -147,10 +154,12 @@
   }
 
   let timer = null;
-  window.addEventListener("resize", () => {
+  const rebuildSoon = () => {
     clearTimeout(timer);
-    timer = setTimeout(() => build(false), 150);
-  });
+    timer = setTimeout(() => build(false), 80);
+  };
+  window.addEventListener("resize", rebuildSoon);
+  if (window.ResizeObserver) new ResizeObserver(rebuildSoon).observe(ring);
   window.addEventListener("load", () => build(false));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => build(true));
   build(false);

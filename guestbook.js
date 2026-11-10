@@ -345,6 +345,7 @@ function stopCamera() {
   const stream = video.srcObject;
   if (stream) stream.getTracks().forEach((t) => t.stop());
   video.srcObject = null;
+  $("#start").classList.remove("is-on");
   const overlay = $("#overlay");
   overlay.getContext("2d").clearRect(0, 0, overlay.width, overlay.height);
   $("#cursor").style.display = "none";
@@ -400,6 +401,7 @@ async function start() {
     }
     if (!guestVisible()) { stream.getTracks().forEach((t) => t.stop()); $("#start").disabled = false; return; }
     video.srcObject = stream;
+    $("#start").classList.add("is-on");   // 카메라가 켜지면 버튼 깜빡임 멈춤
     await video.play();
   } catch (error) {
     console.error(error);
