@@ -10,14 +10,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700&family=Inter:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="guestbook.css">
 
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script defer src="script.js"></script>
-  <script defer src="poem-ring.js"></script>
+  <script defer src="home-intro.js"></script>
   <script defer src="cursor.js"></script>
   <script defer src="to-top.js"></script>
   <script type="module" src="guestbook.js"></script>
@@ -41,78 +41,32 @@
     <!-- HOME -->
     <section id="home-view" class="home-view">
 
-      <div class="hero-top"></div>
+      <!-- 홈 첫 화면 (maximalestudio.com 구성 참고, home-intro.js)
+           위: 포트폴리오 제목 + 카테고리 / 오른쪽: 방명록 원 / 아래: 큰 이름 -->
+      <div class="mx-hero">
 
-<div class="hero-title-wrap">
-  <h1 class="hero-title hero-poem">
-    <span class="poem-line">눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스</span>
-    <span class="poem-stair">
-      <span>시간은 시간이고 일기는 일기이며 정박된 시간,</span>
-      <span>그것을 발산, 발산하기</span>
-    </span>
-    <span class="poem-stair">
-      <span>창문이 희어지는 순간을 목도하기</span>
-      <span>당신이 당신 사랑을 숨기는 이유를 이해하고 싶다</span>
-    </span>
-    <span class="poem-line poem-indent">focus journal poem error and</span>
-  </h1>
+        <div class="mx-intro">
+          <h1 class="mx-title">눈 내리는 날, 수요일, 이십오 년 동안의, 서스펜스 시간은 시간이고 일기는 일기이며 정박된 시간, 그것을 발산, 발산하기 창문이 희어지는 순간을 목도하기 당신이 당신 사랑을 숨기는 이유를 이해하고 싶다 focus journal poem error and</h1>
+          <nav class="mx-cats" aria-label="Portfolio categories"><button type="button" data-category="text">text</button>, <button type="button" data-category="magazines">magazines</button>, <button type="button" data-category="column">column</button>, <button type="button" data-category="shoot">shoot</button></nav>
+        </div>
 
-  <!-- 홈 제목 모션: 글이 입체 고리를 따라 회전 (poem-ring.js) -->
-  <div class="poem-ring" aria-hidden="true"></div>
 
-  <!-- GUEST(방명록) 입구 버튼 -->
-  <button id="guest-button" class="guest-button" type="button" aria-label="방명록"><span class="guest-button-label">guestbook</span></button>
-</div>
+        <!-- 방명록 입구: 큰 검은 선 원 (마우스를 올리면 분홍, 누르면 방명록) -->
+        <svg class="mx-ring" viewBox="0 0 100 100">
+          <g id="guest-button" class="mx-ring-link" role="button" tabindex="0" aria-label="방명록">
+            <circle class="mx-ring-hit" cx="50" cy="50" r="49.5"></circle>
+            <circle class="mx-ring-line" cx="50" cy="50" r="49.5"></circle>
+          </g>
+        </svg>
 
-      <nav class="category-board" aria-label="Portfolio categories">
+        <!-- 큰 이름 위 각주 (contact) = 마지막 글자 n 위 (위치는 home-intro.js가 글자에 맞춰 잡음) -->
+        <button id="contact-button" class="mx-note mx-note-contact" type="button">(contact)</button>
 
-        <button class="category-tile tile-text" data-category="text" type="button">
-          <span class="tile-index">01</span>
-          <span class="tile-name">
-            <span class="tile-word">
-              <img src="images/text.png" alt="text">
-            </span>
-          </span>
-          <span class="tile-foot"></span>
-        </button>
+        <!-- 처음에 아래에서 한 글자씩 올라오는 큰 이름 (사이트 맨 아래에 딱 붙음) -->
+        <p class="mx-wordmark" aria-label="yeomchaewon"><span class="mx-wordmark-inner">yeomchaewon</span></p>
 
-        <button class="category-tile tile-magazines" data-category="magazines" type="button">
-          <span class="tile-index">02</span>
-          <span class="tile-name">
-            <span class="tile-word">
-              <img src="images/magazines.png" alt="magazines">
-            </span>
-          </span>
-          <span class="tile-foot"></span>
-        </button>
+      </div>
 
-        <button class="category-tile tile-column" data-category="column" type="button">
-          <span class="tile-index">03</span>
-          <span class="tile-name">
-            <span class="tile-word">
-              <img src="images/column.png" alt="column">
-            </span>
-          </span>
-          <span class="tile-foot"></span>
-        </button>
-
-        <button class="category-tile tile-shoot" data-category="shoot" type="button">
-          <span class="tile-index">04</span>
-          <span class="tile-name">
-            <span class="tile-word">
-              <img src="images/shoot.png" alt="shoot">
-            </span>
-          </span>
-          <span class="tile-foot"></span>
-        </button>
-
-      </nav>
-
-      <footer class="site-footer">
-        <span>@721mhz</span>
-        <span>2002.10.13</span>
-        <span>SEOUL / KR</span>
-      </footer>
 
     </section>
     <!-- HOME END -->
@@ -174,6 +128,26 @@
     <!-- POST END -->
 
 
+    <!-- CONTACT (maximalestudio.com/contact 구성 참고) -->
+    <section id="contact-view" class="contact-view" hidden>
+      <div class="contact-col">
+        <p class="contact-label">get in touch</p>
+        <p><a href="tel:+821026934285">+82 010 2693 4285</a></p>
+        <p><a href="mailto:gyeyoyl@gmail.com">gyeyoyl@gmail.com</a></p>
+      </div>
+      <div class="contact-col">
+        <p class="contact-label">about</p>
+        <p>2002.10.13.</p>
+        <p>SEOUL, KR</p>
+      </div>
+      <div class="contact-col contact-col-right">
+        <p class="contact-label">socials</p>
+        <p><a class="contact-underline" href="https://www.instagram.com/721mhz/" target="_blank" rel="noopener noreferrer">@721mhz</a></p>
+      </div>
+    </section>
+    <!-- CONTACT END -->
+
+
     <!-- GUEST (방명록: 손동작 바둑판 + 포토부스, 기능은 guestbook.js) -->
     <section id="guest-view" class="guest-view" hidden>
 
@@ -189,14 +163,22 @@
         </svg>
 
         <!-- 방명록 내용 / 가이드 (바둑판 아래) -->
-          <div id="note" class="note">➊ 재생성할 기억 입력하기 <br> ➋ 카메라를 켜고 원하는 위치에 돌 놓기 <br> ➌ 흔적 남기기</div>
+          <div id="note" class="note"></div>
         </div>
 
         <div class="side">
+          <div class="cam-row">
           <div class="cam">
             <video id="video" playsinline muted></video>
             <canvas id="overlay"></canvas>
             <div class="cam-off">재생성할 기억을 입력해 주세요</div>
+          </div>
+            <p class="guide">
+            ➊ 검지·중지를 나란히 붙여 펴고 나머지는 접는다. (착수 동작)<br>
+            ➋ 손을 움직여 원하는 위치에 기억을 가져간다. 착수 준비가 완료되면, 분홍색으로 바뀐다.<br>
+            ➌ 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 내려보기. 원하는 위치에 흔적을 남겼다면, 오늘을 사진으로 기록하기. <br>
+            ➍ 영상과 사진은 모두 브라우저에서만 처리되며, 서버에 저장되지 않습니다. 오로지 돌이라는 형태로 재생성된 기억만 남습니다.
+          </p>
           </div>
 
           <div id="status" class="status">카메라 켜서 시작하기</div>
@@ -206,12 +188,6 @@
           <textarea id="message" rows="2" maxlength="200" placeholder="기억 재생성소"></textarea>
           <button id="booth-open" class="booth-open-btn" type="button" hidden>photobooth</button>
 
-          <p class="guide">
-            ➊ 검지·중지를 나란히 붙여 펴고 나머지는 접는다. (착수 동작)<br>
-            ➋ 손을 움직여 원하는 위치에 기억을 가져간다. 착수 준비가 완료되면, 분홍색으로 바뀐다.<br>
-            ➌ 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 내려보기. 원하는 위치에 흔적을 남겼다면, 오늘을 사진으로 기록하기. <br>
-            ➍ 영상과 사진은 모두 브라우저에서만 처리되며, 서버에 저장되지 않습니다. 오로지 돌이라는 형태로 재생성된 기억만 남습니다.
-          </p>
 
         </div>
       </div>

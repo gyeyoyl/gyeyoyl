@@ -5,6 +5,7 @@
   const listing = $("#listing-view");
   const postView = $("#post-view");
   const guestView = $("#guest-view");
+  const contactView = $("#contact-view");
   const backButton = $("#back-button");
   const notice = $("#notice");
 
@@ -39,6 +40,12 @@
   let currentView = "home";
   let shuffled = false;
 
+  // 넓은 화면(PC)에서는 카테고리 화면을 (왼쪽) 글 목록 - (오른쪽) 글 로 나눠서 보여 줌
+  // (kostasmurkudis.org 구성 참고) — 좁은 화면(휴대폰)은 기존처럼 글이 새 화면으로 열림
+  // (화면이 좁아도 마우스를 쓰는 컴퓨터에서는 나눠 보기 유지 → 목록은 왼쪽 가장자리에 숨어 있다가 마우스를 올리면 나타남)
+  const splitQuery = window.matchMedia("(min-width: 900px), (hover: hover) and (pointer: fine)");
+  let postFromListing = false;   // 지금 보이는 글이 카테고리 목록에서 열린 글인지
+
   // 알림
   function toast(message) {
     if (!notice) return;
@@ -66,7 +73,13 @@
 
 // 게시물 제목으로 손글씨 이미지 경로 자동 생성
 // (posts.json에 titleImage가 있으면 그 이름의 이미지를 사용)
+// → 지금은 손글씨 이미지 대신 글자(폰트)로 제목을 보여 주므로 항상 null
+//   (손글씨로 되돌리려면 아래 USE_TITLE_IMAGES를 true로)
+const USE_TITLE_IMAGES = false;
+
 function getTitleImage(post) {
+  if (!USE_TITLE_IMAGES) return null;
+
   const name = post.titleImage || post.title;
 
   if (!name) return null;
@@ -129,6 +142,7 @@ function excerpt(markdown = "") {
       // 게시물 로딩이 끝난 뒤 현재 카테고리 목록 갱신
       if (currentCategory) {
         renderPosts();
+        openFirstPostInSplit();
       }
 
       console.log("게시물 불러오기 완료:", posts.length);
@@ -145,15 +159,31 @@ function excerpt(markdown = "") {
   // 화면 전환
   function showView(view) {
     home.hidden = view !== "home";
-    listing.hidden = view !== "listing";
+    // 목록에서 연 글이면 목록도 함께 보이게 둠 (좁은 화면에서는 CSS가 목록을 숨김)
+    listing.hidden = !(view === "listing" || (view === "post" && postFromListing));
     postView.hidden = view !== "post";
     guestView.hidden = view !== "guest";
+    if (contactView) contactView.hidden = view !== "contact";
 
     backButton.hidden = view === "home";
     currentView = view;
 
     // 현재 화면 이름을 body에 표시 (CSS에서 글 화면일 때 헤더 문구 숨김)
     document.body.dataset.view = view;
+
+    // 지금 카테고리 표시 (CSS에서 shoot 글을 넓게 보여 줄 때 사용)
+    if (currentCategory && (view === "listing" || view === "post")) {
+      document.body.dataset.category = currentCategory;
+    } else {
+      delete document.body.dataset.category;
+    }
+
+    // 목록 + 글 나란히 보기 상태 표시 (CSS에서 사용)
+    if (view === "post" && postFromListing) {
+      document.body.dataset.split = "on";
+    } else {
+      delete document.body.dataset.split;
+    }
 
     window.scrollTo({
       top: 0,
@@ -229,14 +259,14 @@ function excerpt(markdown = "") {
 
     $("#listing-number").textContent = meta.number;
 
-    $("#listing-title").innerHTML = `
-  <img src="images/${category}.png" alt="${meta.title}">
-`;
+    // 카테고리 제목: 손글씨 이미지 대신 글자로
+    $("#listing-title").textContent = meta.title;
 
     $("#listing-description").textContent = meta.description;
 
     renderPosts();
     showView("listing");
+    openFirstPostInSplit();
   }
 
   // 카테고리 안의 게시물 목록 표시
@@ -302,6 +332,14 @@ function excerpt(markdown = "") {
         openPost(button.dataset.postId);
       });
     });
+  }
+
+  // 넓은 화면에서 카테고리를 열면 첫 번째 글을 오른쪽에 바로 띄움
+  function openFirstPostInSplit() {
+    if (!splitQuery.matches || currentView !== "listing" || currentPost) return;
+
+    const first = $("#post-list [data-post-id]");
+    if (first) openPost(first.dataset.postId, false);
   }
 
   // 이전 글과 다음 글 찾기
@@ -445,6 +483,13 @@ function renderTitle(element, post) {
   }
 
   const imagePath = getTitleImage(post);
+
+  // 손글씨 이미지를 쓰지 않을 때는 글자로 제목 표시
+  if (!imagePath) {
+    element.textContent = post.title;
+    return;
+  }
+
   const img = document.createElement("img");
 
   img.src = imagePath;
@@ -591,8 +636,17 @@ function setupPostImageLayout() {
       );
     }
 
+    // 목록에서(또는 목록 옆에 띄운 글에서) 연 글인지 기억
+    postFromListing =
+      currentView === "listing" || (currentView === "post" && postFromListing);
+
     currentPost = post;
     currentCategory = post.category;
+
+    // 왼쪽 목록에서 지금 보고 있는 글 표시
+    document.querySelectorAll("#post-list [data-post-id]").forEach((button) => {
+      button.classList.toggle("is-active", String(button.dataset.postId) === String(post.id));
+    });
 
     $("#post-category").textContent =
       (post.category || "archive").toUpperCase();
@@ -690,6 +744,21 @@ function setupPostImageLayout() {
   }
 
   $("#guest-button").addEventListener("click", () => openGuest());
+
+  // CONTACT 화면 열기 (홈의 (contact) 각주)
+  function openContact(save = true) {
+    if (save) {
+      pushState({ view: "home" });
+    }
+
+    currentCategory = null;
+    currentPost = null;
+
+    showView("contact");
+  }
+
+  const contactButton = $("#contact-button");
+  if (contactButton) contactButton.addEventListener("click", () => openContact());
 
   // 카테고리 버튼 연결
   document.querySelectorAll("[data-category]").forEach((button) => {

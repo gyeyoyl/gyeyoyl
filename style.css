@@ -1235,3 +1235,1101 @@ body[data-view="post"] .top-meta {
 .post-content em:has(> strong:only-child) {
   font-style: normal;
 }
+
+/* ===== 홈 제목 모션: 원형 고리 → 헤더 아래에서 옆으로 흐르는 띠 ===== */
+/* 화면 양 끝까지 꽉 차는 띠 */
+.poem-marquee {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  padding: 14px 0;           /* 띠의 위아래 여백 */
+  color: var(--ink);
+}
+
+.poem-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: poem-marquee-flow 90s linear infinite;   /* 숫자가 클수록 느리게 흐름 */
+}
+
+.poem-marquee-track span {
+  flex: none;
+  padding-right: 3em;        /* 문장이 반복될 때 사이 간격 */
+  font-family: var(--font-en), var(--font-ko);
+  font-size: 18px;           /* 글자 크기 */
+  font-weight: 700;          /* 글자 두께 */
+  letter-spacing: -0.03em;   /* 자간 */
+  white-space: nowrap;
+}
+
+/* 4번 반복한 글 중 절반(2개)만큼 왼쪽으로 이동하면 처음과 똑같은 모습 → 끊김 없이 반복 */
+@keyframes poem-marquee-flow {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* 띠가 화면보다 넓어서 가로 스크롤이 생기지 않게 */
+html,
+body {
+  overflow-x: clip;
+}
+
+@media (max-width: 760px) {
+  .poem-marquee {
+    padding: 10px 0;
+  }
+
+  .poem-marquee-track span {
+    font-size: 13px;
+  }
+}
+
+/* 움직임 줄이기 설정을 켠 사람에게는 멈춘 띠로 */
+@media (prefers-reduced-motion: reduce) {
+  .poem-marquee-track {
+    animation: none;
+  }
+}
+
+/* =====================================================
+   홈 여백: 시 단어 네모 칸 (poem-blocks.js)
+   ===================================================== */
+/* 원래 숨겨 둔 문구는 자리도 차지하지 않게 (화면 읽기 프로그램용으로만 남김) */
+.hero-title.hero-poem {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  min-height: 0 !important;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.poem-blocks {
+  /* 크기 조절은 이 숫자들만 바꾸면 됨 */
+  --w: min(110px, calc((100vw - 30px) / 6.4));   /* 칸 너비 (PC 최대 110px) */
+  --h: calc(var(--w) * 0.3);                      /* 칸 높이 */
+  --px: calc(var(--w) * 1.05);                    /* 가로 칸 간격 */
+  --py: calc(var(--px) / 133 * 0.62);             /* 세로 간격 (0.62를 키우면 위아래로 넓어짐) */
+
+  position: relative;
+  height: calc(1085 * var(--py) + var(--h));
+  margin: 10px 0 20px;
+}
+
+.poem-block {
+  position: absolute;
+  left: calc(var(--c) * var(--px));
+  top: calc(var(--y) * var(--py));
+  width: var(--w);
+  height: var(--h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: var(--paper);
+  /* 칸이 종이에서 살짝 솟아오른 느낌: 위·왼쪽은 밝게, 아래·오른쪽은 그림자 */
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.95),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.04),
+    1.5px 2px 3px rgba(0, 0, 0, 0.16);
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-size: max(8px, calc(var(--w) * 0.115));
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  /* 엠보싱 글자 */
+  color: #d6d6d6;
+  text-shadow:
+    -1px -1px 0 rgba(255, 255, 255, 0.95),
+    1px 1px 1px rgba(0, 0, 0, 0.22);
+  /* 처음엔 안 보이다가 차례로 툭 튀어나옴 */
+  opacity: 0;
+  animation: poem-block-pop 380ms cubic-bezier(.2, 1.6, .4, 1) forwards;
+}
+
+@keyframes poem-block-pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.85); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .poem-block {
+    letter-spacing: -0.06em;
+  }
+}
+
+/* ===== 흐르는 띠: 엠보싱 글자 + 칸이 다 나타난 뒤에 등장 ===== */
+.poem-marquee {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.poem-marquee.is-on {
+  opacity: 1;
+}
+
+.poem-marquee-track {
+  animation-play-state: paused;
+}
+
+.poem-marquee.is-on .poem-marquee-track {
+  animation-play-state: running;
+}
+
+.poem-marquee-track span {
+  color: #dcdcdc;
+  text-shadow:
+    -1px -1px 0 rgba(255, 255, 255, 0.95),
+    1px 1px 1px rgba(0, 0, 0, 0.28);
+}
+
+/* 움직임 줄이기 설정: 칸과 띠를 바로 보여 줌 */
+@media (prefers-reduced-motion: reduce) {
+  .poem-block {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* =====================================================
+   손글씨 PNG 제목 → 글자(폰트) 제목
+   ===================================================== */
+/* 홈 카테고리 칸 */
+.tile-word {
+  max-width: none;
+  width: auto;
+  padding-right: 40px;
+  color: var(--word-color);
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-size: clamp(30px, 3.6vw, 54px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  transition: color .25s;
+}
+
+.tile-word::after {
+  content: none;
+}
+
+/* text 칸 글씨는 흰색 */
+.tile-text { --word-color: #f5f5f5; }
+
+/* 카테고리 페이지 제목 */
+.listing-handwriting-title {
+  font-family: "Inter", "Gothic A1", sans-serif !important;
+  font-size: clamp(40px, 6vw, 80px) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.045em !important;
+  line-height: 1 !important;
+  color: var(--ink);
+}
+
+/* 게시물 목록 제목 */
+#post-list .card-title {
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.tile-word {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .tile-word {
+    padding-right: 12px;
+    font-size: 26px;
+  }
+
+  #post-list .card-title {
+    font-size: 18px;
+  }
+}
+
+/* =====================================================
+   홈 첫 화면 (maximalestudio.com 구성 참고, home-intro.js)
+   ===================================================== */
+.mx-hero {
+  min-height: calc(100svh - 64px);          /* 헤더(64px)를 뺀 한 화면 */
+  display: grid;
+  grid-template-rows: auto 1fr auto;        /* 위: 제목 / 가운데: 방명록 원 / 아래: 큰 이름 */
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
+/* 위: 포트폴리오 제목 + 카테고리 (한 문단처럼 이어서) */
+.mx-intro {
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-size: clamp(18px, 2.6vw, 38px);      /* 제목 글자 크기 */
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-indent: 15%;                          /* 첫 줄 들여쓰기 */
+  word-break: keep-all;
+  color: var(--ink);
+  max-width: 1500px;
+}
+
+.mx-title {
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+  margin: 0;
+}
+
+.mx-cats {
+  display: inline;
+}
+
+.mx-cats button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.12em;
+  transition: color .2s;
+}
+
+.mx-cats button:hover {
+  color: var(--pink);
+}
+
+/* 오른쪽: 방명록 큰 검은 원 (움직임 없음, 호버하면 분홍) */
+.guest-button.mx-guest {
+  position: static !important;
+  align-self: center;
+  justify-self: end;
+  /* 원 크기: 화면 너비의 26% (단, 화면 높이의 34%를 넘지 않게) */
+  width: clamp(150px, min(26vw, 34svh), 380px) !important;
+  height: clamp(150px, min(26vw, 34svh), 380px) !important;
+  margin: 24px 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink) !important;
+  animation: none !important;
+  transform: none !important;
+  transition: background-color .25s;
+}
+
+.guest-button.mx-guest:hover {
+  background: var(--pink) !important;
+}
+
+.guest-button.mx-guest .guest-button-label {
+  font-size: clamp(14px, 1.6vw, 24px);
+}
+
+/* 아래: 화면 너비에 꽉 차는 큰 이름 */
+.mx-wordmark {
+  margin: 0;
+  overflow: hidden;                          /* 아래에서 올라올 때 가려지는 선 */
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  line-height: 0;
+  color: var(--ink);
+}
+
+.mx-wordmark-inner {
+  display: inline-block;
+  white-space: nowrap;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  padding-right: 0.06em;                     /* 마지막 글자 오른쪽이 잘리지 않게 */
+  padding-bottom: 0.2em;                     /* y 꼬리가 잘리지 않게 */
+}
+
+.mx-letter {
+  display: inline-block;
+}
+
+/* ===== 처음 등장 효과 ===== */
+/* 1) 큰 이름: 한 글자씩 아래에서 올라옴 */
+.mx-hero.is-intro .mx-letter {
+  transform: translateY(110%);
+  animation: mx-rise 900ms cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+/* 2) 제목·카테고리, 방명록 원: 이어서 천천히 나타남 */
+.mx-hero.is-intro .mx-intro {
+  opacity: 0;
+  animation: mx-fade 900ms ease 1000ms forwards;
+}
+
+.mx-hero.is-intro .mx-guest {
+  opacity: 0;
+  animation: mx-fade 900ms ease 1300ms forwards !important;
+}
+
+@keyframes mx-rise {
+  to { transform: translateY(0); }
+}
+
+@keyframes mx-fade {
+  to { opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .mx-hero {
+    min-height: calc(100svh - 54px);         /* 모바일 헤더 54px */
+    padding-top: 14px;
+  }
+
+  .mx-intro {
+    text-indent: 10%;
+  }
+
+  .guest-button.mx-guest {
+    width: 130px !important;
+    height: 130px !important;
+    margin: 28px 0;
+  }
+}
+
+/* 움직임 줄이기 설정: 등장 효과 없이 바로 보여 줌 */
+@media (prefers-reduced-motion: reduce) {
+  .mx-hero.is-intro .mx-letter,
+  .mx-hero.is-intro .mx-intro,
+  .mx-hero.is-intro .mx-guest {
+    animation: none !important;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* =====================================================
+   홈: 큰 이름 세리프체, 제목 들여쓰기 없이 로고 바로 아래부터
+   ===================================================== */
+.mx-wordmark {
+  font-family: "Instrument Serif", "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.mx-wordmark-inner {
+  letter-spacing: -0.02em;
+}
+
+.mx-hero {
+  padding-top: 2px;                          /* gyeyoyl 로고 바로 아래 */
+}
+
+.mx-intro {
+  text-indent: 0;                            /* 들여쓰기 없음 */
+  font-size: clamp(16px, 2vw, 28px);         /* 제목 글자 크기 (조금 작게) */
+  font-weight: 500;                          /* 두께 (조금 두껍게) */
+}
+
+@media (max-width: 760px) {
+  .mx-intro {
+    text-indent: 0;
+    font-size: 15px;
+  }
+}
+
+/* =====================================================
+   카테고리 목록: 미리보기 없이 글 제목만
+   ===================================================== */
+#post-list .card-excerpt {
+  display: none !important;
+}
+
+#post-list .post-card {
+  padding: 7px 0 !important;
+}
+
+#post-list .card-title {
+  margin-bottom: 0 !important;
+  font-size: 17px;
+  font-weight: 500;
+  transition: color .2s;
+}
+
+#post-list .post-card:hover .card-title,
+#post-list .post-card.is-active .card-title {
+  color: var(--pink);
+}
+
+@media (max-width: 760px) {
+  #post-list .card-title {
+    font-size: 16px;
+  }
+}
+
+/* =====================================================
+   넓은 화면: (왼쪽) 글 목록 - (오른쪽) 글  (kostasmurkudis.org 참고)
+   body[data-split="on"]은 script.js가 붙임
+   ===================================================== */
+@media (min-width: 900px) {
+  body[data-split="on"] #app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);   /* 반반 */
+    align-items: start;
+  }
+
+  /* 왼쪽: 목록 (스크롤해도 제자리에 붙어 있음) */
+  body[data-split="on"] #listing-view {
+    position: sticky;
+    top: 64px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0 28px 40px;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+  }
+
+  body[data-split="on"] .listing-head h1 {
+    margin-top: 10px;
+  }
+
+  body[data-split="on"] #post-list {
+    grid-template-columns: minmax(0, 1fr);   /* 목록은 1열 */
+  }
+
+  /* 오른쪽: 글 (페이지와 함께 스크롤) */
+  body[data-split="on"] #post-view {
+    max-width: none;
+    margin: 0;
+    min-height: calc(100vh - 64px);
+    padding: 24px 28px 80px;
+    box-sizing: border-box;
+    background: rgba(20, 4, 10, 0.035);      /* 오른쪽 칸만 아주 옅은 회색 */
+  }
+
+  body[data-split="on"] .post-content {
+    max-width: 640px;
+    margin-left: 0;
+  }
+
+  /* 사진이 있는 글: 오른쪽 칸 안에서는 사진 → 본문 순서로 위아래 배치 */
+  body[data-split="on"] .post-split-layout {
+    display: block;
+    max-width: 640px;
+    margin: 0;
+  }
+
+  body[data-split="on"] .post-image-gallery {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    margin-bottom: 32px;
+  }
+
+  body[data-split="on"] .post-gallery-item img {
+    width: 100%;
+  }
+
+  body[data-split="on"] .post-split-layout .post-content {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+}
+
+
+/* 큰 이름: 양 끝을 화면 너비에 맞추고 글자 사이를 고르게 (home-intro.js) */
+.mx-wordmark-inner {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 방명록 원: 화면 높이의 30%를 넘지 않게 (큰 이름이 한 화면 안에 들어오도록) */
+.guest-button.mx-guest {
+  width: clamp(150px, min(26vw, 30svh), 380px) !important;
+  height: clamp(150px, min(26vw, 30svh), 380px) !important;
+}
+
+@media (max-width: 760px) {
+  .guest-button.mx-guest {
+    width: 130px !important;
+    height: 130px !important;
+  }
+}
+
+/* =====================================================
+   2026-11-21 수정 묶음
+   ===================================================== */
+
+/* 1) 큰 이름: 사이트 맨 아래에 딱 붙게 (y 꼬리는 잘려도 됨) */
+.mx-wordmark-inner {
+  line-height: 0.74;                         /* 숫자를 줄이면 아래로 더 내려가서 더 많이 잘림 */
+  padding-bottom: 0;
+}
+
+/* 2) 큰 이름 위 각주 (contact) */
+.mx-contact {
+  justify-self: start;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(18px, 1.8vw, 26px);
+  color: var(--ink);
+  transition: color .2s;
+}
+
+.mx-contact:hover {
+  color: var(--pink);
+}
+
+/* 홈 그리드: 제목 / 방명록 원 / (contact) / 큰 이름 */
+.mx-hero {
+  grid-template-rows: auto 1fr auto auto;
+}
+
+/* CONTACT 화면: 세 칸, 화면 세로 가운데 */
+.contact-view {
+  min-height: calc(100svh - 64px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: center;                     /* 세 칸 묶음은 화면 세로 가운데 */
+  align-items: start;                        /* 세 칸 윗줄은 나란히 */
+  gap: 24px;
+  padding: 0 28px;
+  box-sizing: border-box;
+  font-family: "Inter", "Gothic A1", sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.contact-view[hidden] {
+  display: none;
+}
+
+.contact-col p {
+  margin: 0;
+}
+
+.contact-col-right {
+  text-align: right;
+}
+
+.contact-label {
+  font-family: "Instrument Serif", serif;
+  font-size: 14px;
+  margin-bottom: 10px !important;
+}
+
+.contact-view a {
+  color: inherit;
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.contact-view a.contact-underline {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.contact-view a:hover {
+  color: var(--pink);
+}
+
+@media (max-width: 760px) {
+  .contact-view {
+    min-height: calc(100svh - 54px);
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    gap: 32px;
+    padding: 0 15px;
+  }
+
+  .contact-col-right {
+    text-align: left;
+  }
+}
+
+/* 3) 이전 글 / 다음 글 버튼 없애기 */
+.post-navigation {
+  display: none !important;
+}
+
+/* 4) 방명록 원에 나오는 guestbook 글씨 세리프 */
+.guest-button .guest-button-label {
+  font-family: "Instrument Serif", serif;
+  letter-spacing: 0;
+}
+
+.guest-button.mx-guest .guest-button-label {
+  font-size: clamp(18px, 2vw, 30px);
+}
+
+/* 5) 방명록 화면: 영어는 모두 세리프 (한글은 그대로 Gothic A1) */
+.guest-view,
+.guest-view *:not(.debug) {
+  font-family: "Instrument Serif", "Noto Sans KR", serif !important;
+}
+
+/* 6) 홈 제목 2pt 작게 */
+.mx-intro {
+  font-size: clamp(14px, 1.8vw, 26px);
+}
+
+@media (max-width: 760px) {
+  .mx-intro {
+    font-size: 13px;
+  }
+}
+
+/* 7) 글 칸 회색 배경 없애기 (일반 배경과 같게) */
+body[data-split="on"] #post-view {
+  background: transparent !important;
+}
+
+/* 8) 글 속 제목(I. 개괄 등): 본문(12.5px)보다 2pt만 크게 */
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0.02em !important;
+  margin: 2.6em 0 0.8em !important;
+}
+
+@media (max-width: 760px) {
+  .post-content h1,
+  .post-content h2,
+  .post-content h3,
+  .post-content h4 {
+    font-size: 14.5px !important;
+  }
+}
+
+/* 9) shoot: 글(사진) 칸을 목록 바로 옆까지 넓혀서 사진 크게 */
+@media (min-width: 900px) {
+  body[data-split="on"][data-category="shoot"] #app {
+    grid-template-columns: minmax(200px, 22%) minmax(0, 1fr);
+  }
+
+  body[data-split="on"][data-category="shoot"] #post-view {
+    padding-left: 0;
+  }
+
+  body[data-split="on"][data-category="shoot"] .post-split-layout,
+  body[data-split="on"][data-category="shoot"] .post-content {
+    max-width: none !important;
+  }
+}
+
+/* 10) 화면을 반으로 줄였을 때(마우스 쓰는 컴퓨터): 글은 넓게,
+       목록은 왼쪽 가장자리에 숨어 있다가 마우스를 올리면 덮어서 나타남 */
+@media (max-width: 899px) and (hover: hover) and (pointer: fine) {
+  body[data-split="on"] #app {
+    display: block;
+  }
+
+  body[data-split="on"] #listing-view {
+    display: block !important;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    z-index: 15;
+    width: min(360px, 85vw);
+    max-width: none;
+    margin: 0;
+    padding: 0 28px 40px 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background: var(--paper);
+    /* 평소에는 오른쪽 끝 22px(LIST 띠)만 보이게 왼쪽으로 숨김 */
+    transform: translateX(calc(-100% + 22px));
+    transition: transform .35s ease, box-shadow .35s ease;
+  }
+
+  body[data-split="on"] #listing-view:hover {
+    transform: none;
+    box-shadow: 12px 0 30px rgba(20, 4, 10, 0.08);
+  }
+
+  /* 숨어 있을 때 보이는 세로 글씨 'list' */
+  body[data-split="on"] #listing-view::after {
+    content: "list";
+    position: fixed;
+    top: 50%;
+    right: 2px;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    font-family: "Instrument Serif", serif;
+    font-size: 16px;
+    color: var(--ink);
+    transition: opacity .2s;
+  }
+
+  body[data-split="on"] #listing-view:hover::after {
+    opacity: 0;
+  }
+
+  body[data-split="on"] #listing-view .listing-head h1 {
+    font-size: 40px !important;
+    margin-top: 10px;
+  }
+
+  body[data-split="on"] #post-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 글은 화면 전체 너비 (왼쪽 LIST 띠만큼 비움) */
+  body[data-split="on"] #post-view {
+    max-width: none;
+    margin: 0;
+    padding: 24px 28px 80px 46px;
+    box-sizing: border-box;
+  }
+
+  body[data-split="on"] .post-split-layout {
+    display: block;
+    max-width: none;
+    margin: 0;
+  }
+
+  body[data-split="on"] .post-image-gallery {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    margin-bottom: 32px;
+  }
+
+  body[data-split="on"] .post-gallery-item img {
+    width: 100%;
+  }
+
+  body[data-split="on"] .post-split-layout .post-content {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+}
+
+@media (max-width: 760px) and (hover: hover) and (pointer: fine) {
+  body[data-split="on"] #listing-view {
+    top: 54px;
+  }
+
+  body[data-split="on"] #post-view {
+    padding-left: 38px;
+    padding-right: 15px;
+  }
+}
+
+/* 휴대폰(터치)에서는 기존처럼 글을 열면 목록은 숨김 */
+@media (max-width: 899px) and (hover: none), (max-width: 899px) and (pointer: coarse) {
+  body[data-split="on"] #listing-view {
+    display: none !important;
+  }
+}
+
+/* 방명록 버튼 글씨: 세리프는 굵기가 한 가지라 보통 굵기로, 대신 조금 크게 */
+.guest-view button,
+.guest-view .booth-head {
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  letter-spacing: 0 !important;
+}
+
+/* =====================================================
+   2026-11-21 수정 묶음 (2)
+   ===================================================== */
+
+/* 1) UP TO TOP: 어떤 배경(사진) 위에서도 보이게 색 반전 */
+.top-button {
+  color: #ffffff;
+  mix-blend-mode: difference;               /* 밝은 곳에선 검게, 어두운 곳에선 희게 */
+}
+
+.top-button:hover {
+  color: var(--pink);
+  mix-blend-mode: normal;
+}
+
+/* 2) 큰 이름: y 꼬리가 조금 보이게 (0.74 → 0.86, 숫자를 키우면 덜 잘림) */
+.mx-wordmark-inner {
+  line-height: 0.86;
+}
+
+/* 3) (contact)는 오른쪽(n 위), 방명록 원은 화면 가운데 */
+.mx-contact {
+  justify-self: end;
+}
+
+.guest-button.mx-guest {
+  justify-self: center;
+}
+
+/* 4) 영어 글씨는 모두 세리프 (한글은 Gothic A1 그대로) */
+:root {
+  --font-en: "Instrument Serif", "Times New Roman", serif;
+}
+
+body,
+body *:not(svg):not(svg *) {
+  font-family: "Instrument Serif", "Noto Sans KR", serif !important;
+}
+
+/* 세리프는 굵기가 한 가지라, 영어만 있는 버튼·라벨은 보통 굵기로 */
+.back-button,
+.top-button,
+.mx-cats button,
+#post-list .card-title,
+.listing-handwriting-title {
+  font-weight: 400 !important;
+}
+
+.listing-handwriting-title {
+  font-family: "Instrument Serif", "Noto Sans KR", serif !important;
+}
+
+
+/* =====================================================
+   2026-11-21 수정 묶음 (3)
+   ===================================================== */
+
+/* 2) 한글도 세리프 (Noto Serif KR) */
+:root {
+  --font-ko: "Noto Sans KR", serif;
+}
+
+/* 1) CONTACT: 세 묶음 모두 왼쪽부터 나란히, 글자도 왼쪽 정렬 */
+.contact-view {
+  grid-template-columns: repeat(3, max-content);
+  justify-content: start;
+  column-gap: clamp(48px, 8vw, 140px);
+}
+
+.contact-col-right {
+  text-align: left;
+}
+
+/* 4·5) 큰 이름 위 각주 두 개: (guestbook)은 y 위, (contact)는 n 위
+   (자리는 home-intro.js가 글자 높이에 맞춰 계산) */
+.mx-hero {
+  position: relative;
+  grid-template-rows: auto 1fr auto;
+}
+
+.mx-wordmark {
+  grid-row: 3;
+}
+
+.mx-wordmark-inner {
+  position: relative;
+}
+
+.mx-note {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: "Instrument Serif", serif !important;
+  font-size: clamp(16px, 1.6vw, 24px);
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: color .2s;
+}
+
+.mx-note:hover {
+  color: var(--pink);
+}
+
+@media (max-width: 760px) {
+  .mx-note {
+    font-size: 13px;
+  }
+}
+
+/* 처음 등장 때 각주도 제목과 함께 서서히 */
+.mx-hero.is-intro .mx-note {
+  opacity: 0;
+  animation: mx-fade 900ms ease 1300ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hero.is-intro .mx-note {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+
+/* =====================================================
+   2026-11-21 수정 묶음 (4)
+   ===================================================== */
+
+/* 1) 방명록 입구: 큰 검은 선 원 (마우스를 올리면 분홍) */
+.mx-hero {
+  overflow: clip;                            /* 원이 화면 밖으로 나가도 스크롤이 생기지 않게 */
+}
+
+.mx-ring {
+  position: absolute;
+  left: 0;
+  top: calc(50% - 32px);                     /* 원 중심 = 화면 세로 가운데 */
+  width: 60vw;                               /* 원 지름 (화면 너비의 60%) */
+  height: 60vw;
+  transform: translateY(-50%);
+  overflow: visible;
+  pointer-events: none;                      /* 원 안쪽은 클릭 통과 (카테고리 글자 눌림) */
+  z-index: 1;
+}
+
+.mx-ring circle {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.mx-ring-line {
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+  pointer-events: none;
+  transition: stroke .2s;
+}
+
+/* 선 주변 12px 폭은 마우스가 닿는 영역 (보이지 않음) */
+.mx-ring-hit {
+  stroke: transparent;
+  stroke-width: 12px;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.mx-ring-link:hover .mx-ring-line,
+.mx-ring-link:focus-visible .mx-ring-line {
+  stroke: var(--pink);
+}
+
+.mx-ring-link:focus {
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .mx-ring {
+    width: 84vw;
+    height: 84vw;
+  }
+}
+
+.mx-hero.is-intro .mx-ring {
+  opacity: 0;
+  animation: mx-fade 900ms ease 1300ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hero.is-intro .mx-ring {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* 2) 한글은 산세리프 (Noto Sans KR) */
+:root {
+  --font-ko: "Noto Sans KR", sans-serif;
+}
+
+/* 3) 영어 자간 조금 넓게 (세리프가 좁은 글꼴이라) */
+.mx-intro {
+  letter-spacing: 0.01em;
+}
+
+.mx-note,
+.mx-cats button,
+.back-button,
+.top-button,
+.contact-view,
+.contact-label {
+  letter-spacing: 0.03em !important;
+}
+
+#post-list .card-title,
+.listing-handwriting-title,
+.post-nav-title {
+  letter-spacing: 0.01em !important;
+}
+
+.guest-view button,
+.guest-view .booth-head {
+  letter-spacing: 0.03em !important;
+}
+
+/* =====================================================
+   2026-11-21 수정 묶음 (5)
+   ===================================================== */
+
+/* 1) 방명록 원: 평소엔 검은 선, 마우스를 올리면 분홍 면으로 채워짐
+      + 헤더에 잘리지 않게 한 화면 안에 들어오는 크기 */
+.mx-ring {
+  top: 50%;
+  width: min(60vw, calc(100svh - 64px - 24px));
+  height: min(60vw, calc(100svh - 64px - 24px));
+}
+
+@media (max-width: 760px) {
+  .mx-ring {
+    width: min(84vw, calc(100svh - 54px - 24px));
+    height: min(84vw, calc(100svh - 54px - 24px));
+  }
+}
+
+/* 원 전체(안쪽 포함)가 마우스 영역 */
+.mx-ring-hit {
+  pointer-events: all;
+}
+
+.mx-ring-line {
+  fill: transparent !important;
+  transition: stroke .25s, fill .25s;
+}
+
+.mx-ring-link:hover .mx-ring-line,
+.mx-ring-link:focus-visible .mx-ring-line {
+  stroke: var(--pink);
+  fill: var(--pink) !important;
+}
+
+/* 제목 글자와 큰 이름은 분홍 면 위에 보이게 (원보다 앞) */
+.mx-intro,
+.mx-wordmark {
+  position: relative;
+  z-index: 2;
+}
+
+/* 제목·큰 이름 글자 위에서도 원 호버가 끊기지 않게 마우스는 통과
+   (카테고리 링크만 눌리게) */
+.mx-intro,
+.mx-wordmark {
+  pointer-events: none;
+}
+
+.mx-cats button {
+  pointer-events: auto;
+}
+
+/* 2) 홈 제목 행간 넓게 (1.2 → 1.45) */
+.mx-intro {
+  line-height: 1.45;
+}
+
+/* 3) 카테고리 + 글 목록을 오른쪽으로 */
+@media (min-width: 900px) {
+  body[data-split="on"] #listing-view {
+    padding-left: clamp(56px, 7vw, 120px);
+  }
+}

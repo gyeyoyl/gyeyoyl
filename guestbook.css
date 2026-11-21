@@ -140,3 +140,120 @@
 @media (prefers-reduced-motion: reduce) {
   .guest-view #start, .guest-view #booth-open, .guest-view .shutter { animation: none !important; }
 }
+
+/* =====================================================
+   2026-11-21 수정: 카메라 원형, 입력칸 모서리 표시 없애기, 메모 칸 정리
+   ===================================================== */
+/* 카메라 화면: 원형 */
+.guest-view .cam {
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
+
+/* 카메라 꺼짐 안내 글씨는 원 가운데 */
+.guest-view .cam .cam-off {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+/* '기억 재생성소' 입력칸 오른쪽 아래 // (크기 조절 손잡이) 없애기 */
+.guest-view textarea {
+  resize: none;
+}
+
+/* 방명록 내용: 분홍 네모 없이 글씨만, 조금 크게, 바둑판 아래 가운데 */
+.guest-view .note,
+.guest-view .note.is-black,
+.guest-view .note.is-regen {
+  background: none;
+  border: 0;
+  color: var(--ink);
+  padding: 0;
+  min-height: 0;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.guest-view .note-label,
+.guest-view .note-source {
+  font-size: 12px;
+}
+
+/* =====================================================
+   2026-11-21 수정 (2): 카메라 옆에 사용법, 한 화면에 다 보이게
+   ===================================================== */
+.guest-view {
+  max-width: 1200px;
+  min-height: 0;
+  padding: 24px 28px 40px;
+}
+
+/* 카메라(원) + 옆에 사용법 */
+.guest-view .cam-row {
+  display: grid;
+  grid-template-columns: clamp(150px, 18vw, 260px) minmax(0, 1fr);
+  gap: clamp(16px, 2vw, 32px);
+  align-items: center;
+}
+
+.guest-view .cam-row .guide {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.guest-view .side {
+  gap: 14px;
+  max-width: 640px;
+}
+
+/* 바둑판 크기: 화면 높이에 맞춰서 한 화면 안에 들어오게 */
+@media (min-width: 600px) {
+  .guest-view .layout {
+    grid-template-columns:
+      minmax(0, min(460px, calc(100svh - 64px - 150px), 46vw))
+      minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 64px);
+    margin-top: 0;
+    align-items: start;
+  }
+}
+
+/* 창을 절반 정도로 줄였을 때: 카메라 아래에 사용법 (옆에 두기엔 좁아서) */
+@media (min-width: 600px) and (max-width: 1099px) {
+  .guest-view .cam-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .guest-view .cam-row .cam {
+    width: min(180px, 100%);
+  }
+
+  .guest-view .cam-row .guide {
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  .guest-view {
+    padding: 18px 20px 30px;
+  }
+
+  .guest-view .board-col {
+    gap: 18px;
+  }
+}
+
+/* 휴대폰: 위아래로 쌓되 카메라와 사용법은 나란히 */
+@media (max-width: 599px) {
+  .guest-view .cam-row {
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .guest-view .cam-row .guide {
+    font-size: 10.5px;
+    line-height: 1.7;
+  }
+}
