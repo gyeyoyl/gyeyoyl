@@ -2333,3 +2333,56 @@ body *:not(svg):not(svg *) {
     padding-left: clamp(56px, 7vw, 120px);
   }
 }
+
+/* 큰 이름: 글자가 차례로가 아니라 한 번에 '챠-' 하고 올라오게 */
+.mx-hero.is-intro .mx-letter {
+  animation-delay: 150ms !important;
+}
+
+/* =====================================================
+   등장 효과: maximalestudio.com/studio 진입 효과 참고
+   - 처음엔 안 보이다가 서서히 나타남 (움직임 없이 투명도만)
+   - 속도 곡선도 maximale와 같게: cubic-bezier(.71, -.02, .31, .98)
+   ===================================================== */
+@keyframes mx-appear {
+  from { opacity: 0.001; }
+  to   { opacity: 1; }
+}
+
+/* 1) 큰 이름 yeomchaewon: 바로 0.7초 동안 '챠-' 나타남 */
+.mx-hero.is-intro .mx-letter {
+  transform: none !important;
+  animation: mx-appear 700ms cubic-bezier(.71, -.02, .31, .98) both !important;
+  animation-delay: 0ms !important;
+}
+
+/* 2) 이어서(0.8초 뒤) 제목·원·(contact)가 0.9초 동안 나타남 */
+.mx-hero.is-intro .mx-intro,
+.mx-hero.is-intro .mx-ring,
+.mx-hero.is-intro .mx-note {
+  animation: mx-appear 900ms cubic-bezier(.71, -.02, .31, .98) 800ms both !important;
+}
+
+/* 3) 다른 화면(카테고리·글·contact·방명록)으로 들어갈 때도 같은 방식으로 나타남 */
+#listing-view:not([hidden]),
+#post-view:not([hidden]),
+#contact-view:not([hidden]),
+#guest-view:not([hidden]) {
+  animation: mx-appear 700ms cubic-bezier(.71, -.02, .31, .98) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-hero.is-intro .mx-letter,
+  .mx-hero.is-intro .mx-intro,
+  .mx-hero.is-intro .mx-ring,
+  .mx-hero.is-intro .mx-note,
+  #listing-view, #post-view, #contact-view, #guest-view {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
+/* 홈 원 선 더 얇게 (1.5px → 0.8px) */
+.mx-ring-line {
+  stroke-width: 0.8px;
+}

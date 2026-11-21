@@ -95,35 +95,35 @@
     {
       "id": "vogue09",
       "category": "magazines",
-      "title": "vogue september 2026",
+      "title": "VOGUE september 2026",
       "date": "unknown",
       "file": "posts/vogue09.md"
     },
-    {
-      "id": "vogue10",
-      "category": "magazines",
-      "title": "vogue october 2026",
-      "date": "unknown",
-      "file": "posts/vogue10.md"
-    },
-    {
+        {
       "id": "dazed09",
       "category": "magazines",
-      "title": "dazed september 2026",
+      "title": "DAZED september 2026",
       "date": "unknown",
       "file": "posts/dazed09.md"
     },
     {
+      "id": "vogue10",
+      "category": "magazines",
+      "title": "VOGUE october 2026",
+      "date": "unknown",
+      "file": "posts/vogue10.md"
+    },
+    {
       "id": "dazed10",
       "category": "magazines",
-      "title": "dazed october 2026",
+      "title": "DAZED october 2026",
       "date": "unknown",
       "file": "posts/dazed10.md"
     },
     {
       "id": "elle10",
       "category": "magazines",
-      "title": "elle october 2026",
+      "title": "ELLE october 2026",
       "date": "unknown",
       "file": "posts/elle10.md"
     },
@@ -146,9 +146,30 @@
         {
       "id": "vogue11",
       "category": "magazines",
-      "title": "vogue november 2026",
+      "title": "VOGUE november 2026",
       "titleImage": "vogue november 2026",
       "date": "unknown",
       "file": "posts/vogue11.md"
+    },
+    {
+      "id": "화이트큐브",
+      "category": "exhibition",
+      "title": "화이트 큐브, 티에스터 게이츠, 2026",
+      "date": "2026-11-16",
+      "file": "posts/화이트큐브.md"
+    },
+    {
+      "id": "november",
+      "category": "magazines",
+      "title": "DAZED&ELLE november 2026",
+      "date": "unknown",
+      "file": "posts/november.md"
+    },
+    {
+      "id": "nails",
+      "category": "shoot",
+      "title": "A TINY WORLD ON YOUR NAILS",
+      "date": "unknown",
+      "file": "posts/nails.md"
     }
   ]
