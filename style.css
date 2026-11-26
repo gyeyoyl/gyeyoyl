@@ -2386,3 +2386,114 @@ body *:not(svg):not(svg *) {
 .mx-ring-line {
   stroke-width: 0.8px;
 }
+
+/* 홈: 넓은 화면에서도 제목 첫 글자(눈)가 gyeyoyl 로고와 같은 세로선에 오도록 가운데 폭 제한 해제 */
+#home-view {
+  max-width: none;
+}
+
+/* =====================================================
+   2026-11-26: (contact)는 헤더로, 원 호버 안내 글씨
+   ===================================================== */
+/* (contact): gyeyoyl과 같은 헤더 줄 오른쪽, 홈에서만 보임 */
+.header-contact {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: "Instrument Serif", serif !important;
+  font-size: 20px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  transition: color .2s;
+}
+
+.header-contact:hover {
+  color: var(--pink);
+}
+
+/* BACK 버튼이 보이는 화면(홈 말고 다른 화면)에서는 숨김 */
+.topbar:has(#back-button:not([hidden])) .header-contact {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .header-contact {
+    font-size: 16px;
+  }
+}
+
+/* 원에 마우스를 올리면 가운데에 'guestbook / click me!' 표시 */
+.mx-ring-label,
+.mx-ring-sub {
+  fill: var(--ink);
+  font-family: "Instrument Serif", serif !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+
+.mx-ring-label {
+  font-size: 7px;      /* 원 크기에 비례 (원 지름 = 100 기준) */
+  font-style: italic;
+}
+
+.mx-ring-sub {
+  font-size: 3.2px;
+  letter-spacing: 0.05em;
+}
+
+.mx-ring-link:hover .mx-ring-label,
+.mx-ring-link:hover .mx-ring-sub,
+.mx-ring-link:focus-visible .mx-ring-label,
+.mx-ring-link:focus-visible .mx-ring-sub {
+  opacity: 1;
+}
+
+/* 원 안내 글씨: 더 작고 담백하게 (이탤릭 없이) */
+.mx-ring-label {
+  font-size: 3.6px;
+  font-style: normal;
+  letter-spacing: 0.03em;
+}
+
+.mx-ring-sub {
+  font-size: 2.4px;
+}
+
+/* =====================================================
+   방명록 원: 가운데 글씨 대신, 커서 옆에 'guestbook' 네모 표시
+   ===================================================== */
+.mx-ring-label,
+.mx-ring-sub {
+  display: none;
+}
+
+.mx-cursor-tag {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  padding: 4px 9px 5px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "Instrument Serif", serif !important;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+  /* 커서 오른쪽 아래에 붙음 (숫자를 바꾸면 커서와의 거리 조절) */
+  transform: translate(14px, 14px);
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.mx-cursor-tag.is-on {
+  opacity: 1;
+}
+
+/* guestbook 네모 칸: 커서 오른쪽 위에 살짝 겹치게 */
+.mx-cursor-tag {
+  transform: translate(8px, calc(-100% - 9px));
+}

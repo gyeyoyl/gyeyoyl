@@ -31,6 +31,9 @@
   <img src="images/gyeyoyl.png" alt="gyeyoyl">
 </a>
 
+    <!-- 홈에서만 보이는 (contact) — gyeyoyl과 같은 헤더 줄 -->
+    <button id="contact-button" class="header-contact" type="button">contact</button>
+
     <button id="back-button" class="back-button" type="button" hidden>
       BACK <span></span>
     </button>
@@ -56,11 +59,11 @@
           <g id="guest-button" class="mx-ring-link" role="button" tabindex="0" aria-label="방명록">
             <circle class="mx-ring-hit" cx="50" cy="50" r="49.5"></circle>
             <circle class="mx-ring-line" cx="50" cy="50" r="49.5"></circle>
+            <!-- 마우스를 올리면 나타나는 안내 글씨 -->
+            <text class="mx-ring-label" x="50" y="50" text-anchor="middle">guestbook</text>
           </g>
         </svg>
 
-        <!-- 큰 이름 위 각주 (contact) = 마지막 글자 n 위 (위치는 home-intro.js가 글자에 맞춰 잡음) -->
-        <button id="contact-button" class="mx-note mx-note-contact" type="button">(contact)</button>
 
         <!-- 처음에 아래에서 한 글자씩 올라오는 큰 이름 (사이트 맨 아래에 딱 붙음) -->
         <p class="mx-wordmark" aria-label="yeomchaewon"><span class="mx-wordmark-inner">yeomchaewon</span></p>
@@ -175,8 +178,11 @@
           </div>
             <p class="guide">
             ➊ 검지·중지를 나란히 붙여 펴고 나머지는 접는다. (착수 동작)<br>
-            ➋ 손을 움직여 원하는 위치에 기억을 가져간다. 착수 준비가 완료되면, 분홍색으로 바뀐다.<br>
-            ➌ 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 내려보기. 원하는 위치에 흔적을 남겼다면, 오늘을 사진으로 기록하기. <br>
+            <br>
+            ➋ 손을 움직여 원하는 위치에 기억을 가져간다. <br> 착수 준비가 완료되면, 분홍색으로 바뀐다.<br>
+            <br>
+            ➌ 잠깐 멈췄다가, 손을 아래로 짧고 빠르게 내려보기. <br>원하는 위치에 흔적을 남겼다면, 오늘을 사진으로 기록하기. <br>
+            <br>
             ➍ 영상과 사진은 모두 브라우저에서만 처리되며, 서버에 저장되지 않습니다. 오로지 돌이라는 형태로 재생성된 기억만 남습니다.
           </p>
           </div>

@@ -823,8 +823,11 @@ function setupPostImageLayout() {
   let wheelTimer = null;
   let gestureLock = false;
 
+  // ※ 글을 읽다 맨 위로 스크롤하면 홈으로 튕기는 문제가 있어서 이 기능은 끔 (켜려면 true)
+  const PULL_DOWN_BACK = false;
+
   window.addEventListener("wheel", (event) => {
-    if (backButton.hidden || gestureLock) return;
+    if (!PULL_DOWN_BACK || backButton.hidden || gestureLock) return;
 
     // 사진 글의 사진/본문 영역 안에서 위로 스크롤 중이면 뒤로 가기 하지 않음
     const panel = event.target.closest?.(
